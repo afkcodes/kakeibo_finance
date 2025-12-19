@@ -1,0 +1,41 @@
+{
+  "name": "kakeibo-v2",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cross-platform budget tracking app - Monorepo",
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "dev:web": "turbo dev --filter=@kakeibo/web",
+    "dev:mobile": "turbo start --filter=@kakeibo/mobile",
+    "android": "turbo android --filter=@kakeibo/mobile",
+    "ios": "turbo ios --filter=@kakeibo/mobile",
+    "build": "turbo build",
+    "build:core": "turbo build --filter=@kakeibo/core",
+    "build:web": "turbo build --filter=@kakeibo/web",
+    "type-check": "turbo type-check",
+    "lint": "turbo lint",
+    "format": "biome format --write .",
+    "prepare": "lefthook install",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "turbo build && changeset publish"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.10",
+    "@changesets/cli": "^2.29.8",
+    "@commitlint/cli": "^20.2.0",
+    "@commitlint/config-conventional": "^20.2.0",
+    "lefthook": "^2.0.12",
+    "turbo": "^2.6.3",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=20",
+    "yarn": ">=4"
+  },
+  "packageManager": "yarn@4.7.0"
+}
