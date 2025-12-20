@@ -25,37 +25,44 @@ A cross-platform personal finance management app built with a modern monorepo ar
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js >= 20
-- pnpm 9.15.0+
+- Corepack enabled (comes with Node.js 20+)
 - For mobile: Android Studio / Xcode
 
 ### Installation
 
 ```bash
+# Enable Corepack (one-time setup)
+corepack enable
+
 # Install dependencies
-pnpm install
+yarn install
 
 # Start development
-pnpm dev:web      # Web app (http://localhost:3000)
-pnpm dev:native   # Mobile (Metro bundler)
+yarn dev:web      # Web app (http://localhost:3000)
+yarn dev:native   # Mobile (Metro bundler)
 ```
 
 ### Mobile Setup
 
 **Android:**
+
 ```bash
 cd apps/native
-pnpm android
+yarn android
 ```
 
 **iOS:**
+
 ```bash
 cd apps/native
-pnpm ios
+yarn ios
 ```
 
 ## 🛠️ Tech Stack
 
+- **Yarn** ^4.7.0 - Package manager with Corepack
 - **Turborepo** ^2.6.3 - Monorepo orchestration with smart caching
 - **TypeScript** ^5.9.3 - Type safety across all packages
 - **Biome** ^2.3.10 - Fast linting and formatting
@@ -68,61 +75,65 @@ pnpm ios
 ### Development
 
 ```bash
-pnpm dev:web      # Start web dev server
-pnpm dev:mobile   # Start Metro bundler
+yarn dev:web      # Start web dev server
+yarn dev:native   # Start Metro bundler
+yarn android      # Run Android app
+yarn ios          # Run iOS app
 ```
 
 ### Building
 
 ```bash
-pnpm build        # Build all packages
-pnpm build:core   # Build core library only
+yarn build        # Build all packages
+yarn build:core   # Build core library only
+yarn build:web    # Build web app only
 ```
 
 ### Quality Checks
 
 ```bash
-pnpm type-check   # TypeScript type checking
-pnpm lint         # Lint all packages with Biome
+yarn type-check   # TypeScript type checking
+yarn lint         # Lint all packages with Biome
+yarn format       # Format code with Biome
+yarn clean        # Clean build artifacts
 ```
 
 ### Testing
 
 ```bash
-pnpm test         # Run all tests
-pnpm test:web     # Web tests only
-pnpm test:mobile  # Mobile tests only
+yarn test         # Run all tests
 ```
 
 ### Versioning & Release
 
 ```bash
-pnpm changeset    # Create a new changeset
-pnpm version      # Bump versions based on changesets
+yarn changeset    # Create a new changeset
+yarn version      # Bump versions based on changesets
+yarn release      # Build and publish packages
 ```
 
 ## 🏗️ Project Structure
 
 ```
 kakeibo-v2/
-├── packages/
-│   ├── core/              # Shared business logic
-│   │   ├── src/
-│   │   ├── dist/          # Compiled output
-│   │   └── package.json
+├── apps/
 │   ├── web/               # Web application
 │   │   ├── src/
 │   │   ├── public/
 │   │   └── package.json
-│   └── mobile/            # React Native app
-│       ├── src/
+│   └── native/            # React Native app
 │       ├── android/       # Android native code
 │       ├── ios/           # iOS native code
 │       └── package.json
-├── turbo.json            # Turborepo configuration
-├── biome.json            # Biome linter/formatter config
-├── lefthook.yml          # Git hooks configuration
-└── pnpm-workspace.yaml   # Workspace definition
+├── packages/
+│   └── core/              # Shared business logic
+│       ├── src/
+│       ├── dist/          # Compiled output
+│       └── package.json
+├── turbo.json             # Turborepo configuration
+├── biome.json             # Biome linter/formatter config
+├── lefthook.yml           # Git hooks configuration
+└── package.json           # Root workspace config
 ```
 
 ## 📋 Commit Convention
@@ -130,11 +141,12 @@ kakeibo-v2/
 Format: `type(scope): description`
 
 **Types:** feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert  
-**Scopes:** core, web, mobile, deps, config, release
+**Scopes:** core, web, native, deps, config, release
 
 Examples:
+
 - `feat(web): add transaction filtering`
-- `fix(mobile): resolve navigation crash`
+- `fix(native): resolve navigation crash`
 - `chore(deps): update dependencies`
 
 ## 📄 License
