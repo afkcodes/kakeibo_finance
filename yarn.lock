@@ -2791,6 +2791,8 @@ __metadata:
     "@types/react": "npm:^19.2.0"
     "@types/react-dom": "npm:^19.2.0"
     "@vitejs/plugin-react": "npm:^5.0.4"
+    dexie: "npm:4.2.1"
+    dexie-react-hooks: "npm:^4.2.0"
     jsdom: "npm:^27.0.0"
     lucide-react: "npm:^0.545.0"
     react: "npm:^19.2.0"
@@ -5786,6 +5788,24 @@ __metadata:
   version: 3.1.0
   resolution: "detect-newline@npm:3.1.0"
   checksum: 10c0/c38cfc8eeb9fda09febb44bcd85e467c970d4e3bf526095394e5a4f18bc26dd0cf6b22c69c1fa9969261521c593836db335c2795218f6d781a512aea2fb8209d
+  languageName: node
+  linkType: hard
+
+"dexie-react-hooks@npm:^4.2.0":
+  version: 4.2.0
+  resolution: "dexie-react-hooks@npm:4.2.0"
+  peerDependencies:
+    "@types/react": ">=16"
+    dexie: ">=4.2.0-alpha.1 <5.0.0"
+    react: ">=16"
+  checksum: 10c0/1d5270584088e8e1e693bb23c9b9b6b09530c55ab258a57e7ede25afe20e450539b40d912c1b81392f732adcadde2fe7d75b8faf65aa7c09702cf1128b249f82
+  languageName: node
+  linkType: hard
+
+"dexie@npm:4.2.1":
+  version: 4.2.1
+  resolution: "dexie@npm:4.2.1"
+  checksum: 10c0/2e96bb21fc559290e545b740d943cdaa0cad4281f89e7355c332a8bc83870fc05ae9460be586fdb4b55f3860489070b17234a41a78cf469ed6464f6e0616125b
   languageName: node
   linkType: hard
 
