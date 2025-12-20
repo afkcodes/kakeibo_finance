@@ -17,7 +17,7 @@
 ### **Shared Code (Platform-Agnostic)**
 
 - [x] Phase 1: Core Foundation - `packages/core/` (35/35) ✅
-- [ ] Phase 2: Business Logic Services - `packages/core/src/services/` (0/8)
+- [x] Phase 2: Business Logic Services - `packages/core/src/services/` (8/8) ✅
 
 ### **Web Platform Only** 🌐
 - [x] Phase 3A: Web Database - `apps/web/src/services/db/` (6/6) ✅
@@ -413,38 +413,40 @@
 
 ---
 
-## 🧠 Phase 2: Business Logic Services
+## 🧠 Phase 2: Business Logic Services ✅
 **Location**: `packages/core/src/services/`
 **Purpose**: Platform-agnostic business logic (calculations, formatters)
 
-### 2.1 Calculation Services (0/3)
-- [ ] Create `packages/core/src/services/calculations/budgetProgress.ts`
-  - [ ] Migrate logic from `useBudgets.ts`
-  - [ ] `calculateBudgetProgress()` - pure function
-  - [ ] `calculateActiveAlerts()` - pure function
-  - [ ] `calculateProjectedSpending()` - pure function
-- [ ] Create `packages/core/src/services/calculations/goalProgress.ts`
-  - [ ] `calculateGoalProgress()` - pure function
-  - [ ] `calculateRequiredMonthlyContribution()` - pure function
-- [ ] Create `packages/core/src/services/calculations/statistics.ts`
-  - [ ] `calculateMonthlyStats()` - pure function
-  - [ ] `calculateSpendingByCategory()` - pure function
-  - [ ] `calculateNetWorth()` - pure function
+### 2.1 Calculation Services (3/3) ✅
+- [x] Create `packages/core/src/services/calculations/budgetProgress.ts`
+  - [x] Migrated logic from `useBudgets.ts`
+  - [x] `calculateBudgetProgress()` - pure function (156 lines)
+  - [x] `calculateActiveAlerts()` - pure function
+  - [x] `calculateProjectedSpending()` - pure function
+- [x] Create `packages/core/src/services/calculations/goalProgress.ts`
+  - [x] `calculateGoalProgress()` - pure function (105 lines)
+  - [x] `calculateRequiredMonthlyContribution()` - pure function
+- [x] Create `packages/core/src/services/calculations/statistics.ts`
+  - [x] `calculateMonthlyStats()` - pure function (286 lines)
+  - [x] `calculateSpendingByCategory()` - pure function
+  - [x] `calculateNetWorth()` - pure function
+- [x] Create `packages/core/src/services/calculations/index.ts` barrel export
 
-### 2.2 Auth Services (0/3)
-- [ ] Create `packages/core/src/services/auth/authService.ts`
-  - [ ] `createGuestUser()` - platform-agnostic
-  - [ ] `convertSupabaseUser()` - platform-agnostic
-- [ ] Create `packages/core/src/services/auth/guestUser.ts`
-- [ ] Create `packages/core/src/services/auth/migration.ts`
-  - [ ] `detectBackupUserId()` - platform-agnostic
-  - [ ] User ID remapping logic
+### 2.2 Auth Services (3/3) ✅
+- [x] Create `packages/core/src/services/auth/authService.ts`
+  - [x] `createGuestUser()` - platform-agnostic (165 lines)
+  - [x] `convertSupabaseUser()` - platform-agnostic
+  - [x] All auth helper functions implemented
+- [x] Create `packages/core/src/services/auth/migration.ts`
+  - [x] `detectBackupUserId()` - platform-agnostic
+  - [x] User ID remapping logic
+- [x] Create `packages/core/src/services/auth/index.ts` barrel export
 
-### 2.3 Formatter Services (0/2)
-- [ ] Create `packages/core/src/services/formatters/currency.ts`
-  - [ ] Platform-agnostic currency formatting (no `Intl` if not supported on native)
-- [ ] Create `packages/core/src/services/formatters/date.ts`
-  - [ ] Use `date-fns` (works on both platforms)
+### 2.3 Formatter Services (2/2) ✅
+- [x] Formatters already exist in `packages/core/src/utils/formatters.ts`
+  - [x] `formatCurrency()` - works on both platforms
+  - [x] `formatRelativeDate()` - uses date-fns
+  - [x] `formatFinancialMonthRange()` - platform-agnostic
 
 ---
 
