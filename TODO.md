@@ -33,7 +33,7 @@
 - [ ] Phase 5: Testing & Quality Assurance (0/15)
 - [ ] Phase 6: Documentation & CI/CD (0/9)
 
-**Total Tasks**: 47/141 completed
+**Total Tasks**: 50/141 completed
 
 ---
 
@@ -485,7 +485,7 @@
 **Location**: `apps/web/src/components/`
 **Purpose**: React components using Radix UI + Tailwind CSS
 
-### 3B.1 Web Base Components (6/14)
+### 3B.1 Web Base Components (9/14)
 - [x] Copy `src/components/ui/Button/` → `apps/web/src/components/ui/Button/`
   - [x] ⚠️ Uses browser events (`onClick`)
   - [x] Updated to use `@kakeibo/core` utilities (cn, tv)
@@ -502,6 +502,15 @@
   - [x] Updated to use `@kakeibo/core` utilities (cn)
 - [x] Copy `src/components/ui/ProgressBar/` → `apps/web/src/components/ui/ProgressBar/`
   - [x] Updated to use `@kakeibo/core` utilities (cn)
+- [x] Copy `src/components/ui/Select/` → `apps/web/src/components/ui/Select/`
+  - [x] ⚠️ Uses Radix UI Select (web-only)
+  - [x] Installed @radix-ui/react-select
+- [x] Copy `src/components/ui/Checkbox/` → `apps/web/src/components/ui/Checkbox/`
+  - [x] ⚠️ Uses Radix UI Checkbox (web-only)
+  - [x] Installed @radix-ui/react-checkbox
+  - [x] Updated to use `@kakeibo/core` utilities (cn, tv)
+- [x] Copy `src/components/ui/CategoryIcon/` → `apps/web/src/components/ui/CategoryIcon/`
+  - [x] All 70+ Lucide icons mapped
 - [ ] Copy `src/components/ui/Modal/` → `apps/web/src/components/ui/Modal/`
   - [ ] ⚠️ Uses `createPortal` (web-only)
 - [ ] Copy `src/components/ui/Select/` → `apps/web/src/components/ui/Select/`
