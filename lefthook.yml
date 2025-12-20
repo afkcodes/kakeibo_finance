@@ -3,8 +3,8 @@ pre-commit:
   commands:
     lint:
       run: yarn run lint
-    type-check:
-      run: yarn run type-check
+    format:
+      run: yarn run format
 commit-msg:
   commands:
     commitlint:

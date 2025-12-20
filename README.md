@@ -2,24 +2,25 @@
 
 A cross-platform personal finance management app built with a modern monorepo architecture.
 
-## 📦 Packages
+## 📦 Structure
 
-### @kakeibo/core
-Shared business logic, types, and state management
-- **Zustand** ^5.0.9 - State management
-- **Zod** ^4.2.1 - Schema validation
-- **date-fns** ^4.1.0 - Date utilities
+### Apps
 
-### @kakeibo/web
-Web application with TanStack Router
+**@kakeibo/web** - Web application with TanStack Router
 - **React** ^19.2.3
 - **TanStack Router** ^1.132.0
 - **Vite** ^7.3.0
 
-### @kakeibo/mobile
-React Native mobile application
+**@kakeibo/native** - React Native mobile application
 - **React Native** ^0.83.1
 - Full native support (Android & iOS)
+
+### Packages
+
+**@kakeibo/core** - Shared business logic, types, and state management
+- **Zustand** ^5.0.9 - State management
+- **Zod** ^4.2.1 - Schema validation
+- **date-fns** ^4.1.0 - Date utilities
 
 ## 🚀 Getting Started
 
@@ -36,20 +37,20 @@ pnpm install
 
 # Start development
 pnpm dev:web      # Web app (http://localhost:3000)
-pnpm dev:mobile   # Mobile (Metro bundler)
+pnpm dev:native   # Mobile (Metro bundler)
 ```
 
 ### Mobile Setup
 
 **Android:**
 ```bash
-cd packages/mobile
+cd apps/native
 pnpm android
 ```
 
 **iOS:**
 ```bash
-cd packages/mobile
+cd apps/native
 pnpm ios
 ```
 

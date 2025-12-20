@@ -1,4 +1,4 @@
-package com.kakeibomobile
+package codes.afk.kakeibo.budget.tracker
 
 import android.app.Application
 import com.facebook.react.PackageList

@@ -1,5 +1,5 @@
 {
-  "name": "@kakeibo/mobile",
+  "name": "@kakeibo/native",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,7 +9,8 @@
     "lint": "biome check .",
     "start": "react-native start",
     "type-check": "tsc --noEmit",
-    "test": "jest"
+    "test": "jest",
+    "clean": "rm -rf android/build android/app/build ios/build .turbo node_modules/.cache"
   },
   "dependencies": {
     "@kakeibo/core": "workspace:*",
