@@ -1,0 +1,67 @@
+import { useLocation } from '@tanstack/react-router';
+import { PieChart, Plus, Target, Wallet } from 'lucide-react';
+import { useMemo } from 'react';
+
+export const FloatingActionButton = () => {
+  const location = useLocation();
+  // TODO: Connect to store once available
+  const setActiveModal = (_modal: string) => {
+    // TODO: Implement modal opening
+  };
+
+  // Determine the appropriate action based on current route
+  const fabConfig = useMemo(() => {
+    const path = location.pathname;
+
+    // Hide FAB on settings and analytics pages
+    if (path.startsWith('/settings') || path.startsWith('/analytics')) {
+      return null;
+    }
+
+    if (path.startsWith('/budgets')) {
+      return {
+        modal: 'add-budget' as const,
+        icon: PieChart,
+        color: 'bg-primary-500 hover:bg-primary-600 shadow-primary-500/30',
+      };
+    }
+
+    if (path.startsWith('/goals')) {
+      return {
+        modal: 'add-goal' as const,
+        icon: Target,
+        color: 'bg-primary-500 hover:bg-primary-600 shadow-primary-500/30',
+      };
+    }
+
+    if (path.startsWith('/accounts')) {
+      return {
+        modal: 'add-account' as const,
+        icon: Wallet,
+        color: 'bg-primary-500 hover:bg-primary-600 shadow-primary-500/30',
+      };
+    }
+
+    // Default: Dashboard, Transactions, or any other page
+    return {
+      modal: 'add-transaction' as const,
+      icon: Plus,
+      color: 'bg-primary-500 hover:bg-primary-600 shadow-primary-500/30',
+    };
+  }, [location.pathname]);
+
+  // Don't render if no config (settings/analytics pages)
+  if (!fabConfig) return null;
+
+  const Icon = fabConfig.icon;
+
+  return (
+    <button
+      type="button"
+      onClick={() => setActiveModal(fabConfig.modal)}
+      className={`fixed right-4 bottom-24 z-50 lg:hidden w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 active:scale-90 ${fabConfig.color}`}
+    >
+      <Icon className="w-6 h-6 text-white" />
+    </button>
+  );
+};
