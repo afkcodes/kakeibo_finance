@@ -84,3 +84,30 @@ export interface GoalMilestone {
   /** When milestone was reached (undefined if not reached yet) */
   reachedAt?: Date;
 }
+
+/**
+ * Goal progress calculation result
+ *
+ * Contains all calculated metrics for goal tracking
+ * including completion percentage, remaining amount,
+ * deadline tracking, and on-track status.
+ */
+export interface GoalProgress {
+  /** The goal being tracked */
+  goal: Goal;
+
+  /** Completion percentage (0-100+) */
+  percentage: number;
+
+  /** Remaining amount to reach target */
+  remaining: number;
+
+  /** Days until deadline (undefined if no deadline set) */
+  daysUntilDeadline?: number;
+
+  /** Required monthly contribution to meet deadline (undefined if no deadline) */
+  requiredMonthlyContribution?: number;
+
+  /** Whether goal is on track to meet deadline (always true if no deadline) */
+  isOnTrack: boolean;
+}
