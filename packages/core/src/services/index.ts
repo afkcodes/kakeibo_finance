@@ -7,6 +7,8 @@
  * Platform: Platform-agnostic (core)
  */
 
+// Auth services
+export * from './auth';
 // Calculation services
 export * from './calculations';
 // Database abstraction layer
