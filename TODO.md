@@ -1,6 +1,6 @@
 # Kakeibo Monorepo Migration - Detailed TODO
 
-> **Status**: � In Progress - Phase 1  
+> **Status**: 🔄 In Progress - Phase 3B  
 > **Last Updated**: December 20, 2024  
 > **Goal**: Migrate all features from `kakeibo` to `kakeibo-v2` monorepo with proper separation of concerns
 > 
@@ -20,7 +20,7 @@
 - [ ] Phase 2: Business Logic Services - `packages/core/src/services/` (0/8)
 
 ### **Web Platform Only** 🌐
-- [ ] Phase 3A: Web Database - `apps/web/src/services/db/` (0/6)
+- [x] Phase 3A: Web Database - `apps/web/src/services/db/` (6/6) ✅
 - [ ] Phase 3B: Web UI Components - `apps/web/src/components/` (0/24)
 - [ ] Phase 3C: Web Pages & Features - `apps/web/src/pages/` (0/13)
 
@@ -33,7 +33,7 @@
 - [ ] Phase 5: Testing & Quality Assurance (0/15)
 - [ ] Phase 6: Documentation & CI/CD (0/9)
 
-**Total Tasks**: 0/141 completed
+**Total Tasks**: 42/141 completed
 
 ---
 
@@ -485,9 +485,11 @@
 **Location**: `apps/web/src/components/`
 **Purpose**: React components using Radix UI + Tailwind CSS
 
-### 3B.1 Web Base Components (0/14)
-- [ ] Copy `src/components/ui/Button/` → `apps/web/src/components/ui/Button/`
-  - [ ] ⚠️ Uses browser events (`onClick`)
+### 3B.1 Web Base Components (1/14)
+- [x] Copy `src/components/ui/Button/` → `apps/web/src/components/ui/Button/`
+  - [x] ⚠️ Uses browser events (`onClick`)
+  - [x] Updated to use `@kakeibo/core` utilities (cn, tv)
+  - [x] Installed lucide-react for Loader2 icon
 - [ ] Copy `src/components/ui/Input/` → `apps/web/src/components/ui/Input/`
 - [ ] Copy `src/components/ui/Modal/` → `apps/web/src/components/ui/Modal/`
   - [ ] ⚠️ Uses `createPortal` (web-only)
