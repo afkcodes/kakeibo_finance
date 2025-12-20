@@ -18,6 +18,8 @@
     "react": "19.2.0",
     "react-native": "0.83.1",
     "react-native-safe-area-context": "^5.5.2",
+    "tailwindcss": "^4.1.18",
+    "uniwind": "^1.2.2",
     "zustand": "^5.0.9"
   },
   "devDependencies": {

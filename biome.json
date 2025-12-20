@@ -15,7 +15,8 @@
       "!**/.expo",
       "!**/android",
       "!**/ios",
-      "!**/routeTree.gen.ts"
+      "!**/routeTree.gen.ts",
+      "!**/*.css"
     ]
   },
   "formatter": {
@@ -37,8 +38,17 @@
         "noExplicitAny": "warn"
       },
       "complexity": {
-        "noExcessiveCognitiveComplexity": "warn"
+        "noExcessiveCognitiveComplexity": "warn",
+        "noImportantStyles": "off"
       }
+    }
+  },
+  "css": {
+    "parser": {
+      "cssModules": false
+    },
+    "linter": {
+      "enabled": false
     }
   },
   "javascript": {

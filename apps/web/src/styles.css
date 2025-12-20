@@ -1,12 +1,7 @@
-body {
-  margin: 0;
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",
-    "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+@import "tailwindcss";
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
-}
+/* Import shared cross-platform theme tokens */
+@import "../../../packages/core/src/styles/theme.css";
+
+/* Import web-specific styles (animations, hover, etc.) */
+@import "../../../packages/core/src/styles/web.css";
