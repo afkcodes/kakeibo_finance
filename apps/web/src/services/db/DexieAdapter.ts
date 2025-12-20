@@ -36,6 +36,13 @@ import type {
 import { generateId } from '@kakeibo/core';
 import { db } from './index';
 
+// ID generators with entity-specific prefixes for better debugging and clarity
+const generateTransactionId = () => `tr-${generateId()}`;
+const generateAccountId = () => `acc-${generateId()}`;
+const generateCategoryId = () => `cat-${generateId()}`;
+const generateBudgetId = () => `bud-${generateId()}`;
+const generateGoalId = () => `goal-${generateId()}`;
+
 /**
  * Dexie adapter implementing IDatabaseAdapter
  */
@@ -85,7 +92,12 @@ export class DexieAdapter implements IDatabaseAdapter {
 
     return accounts.filter((account) => {
       if (filters.type && account.type !== filters.type) return false;
-      if (filters.isActive !== undefined && account.isActive !== filters.isActive) return false;
+      // Map isArchived filter to isActive (archived = !active)
+      if (filters.isArchived !== undefined && account.isActive === filters.isArchived) return false;
+      if (filters.search) {
+        const search = filters.search.toLowerCase();
+        if (!account.name.toLowerCase().includes(search)) return false;
+      }
       return true;
     });
   }
@@ -97,11 +109,14 @@ export class DexieAdapter implements IDatabaseAdapter {
   async createAccount(userId: string, input: CreateAccountInput): Promise<Account> {
     const now = new Date();
     const account: Account = {
-      id: generateId(),
+      id: generateAccountId(),
       userId,
       ...input,
       balance: input.balance ?? 0,
-      isActive: input.isActive ?? true,
+      // Map isArchived from input (if provided) to isActive field in entity
+      // isArchived in schema means "do you want to archive it?"
+      // isActive in entity means "is it currently active?"
+      isActive: !(input.isArchived ?? false),
       createdAt: now,
       updatedAt: now,
     };
@@ -148,16 +163,13 @@ export class DexieAdapter implements IDatabaseAdapter {
   }
 
   async createCategory(userId: string, input: CreateCategoryInput): Promise<Category> {
-    const now = new Date();
     const category: Category = {
-      id: generateId(),
+      id: generateCategoryId(),
       userId,
       ...input,
-      parentId: input.parentId ?? null,
+      parentId: input.parentId,
       isDefault: false,
       order: input.order ?? 0,
-      createdAt: now,
-      updatedAt: now,
     };
 
     await db.categories.add(category);
@@ -165,7 +177,7 @@ export class DexieAdapter implements IDatabaseAdapter {
   }
 
   async updateCategory(categoryId: string, updates: UpdateCategoryInput): Promise<Category> {
-    await db.categories.update(categoryId, { ...updates, updatedAt: new Date() });
+    await db.categories.update(categoryId, updates);
     const category = await db.categories.get(categoryId);
     if (!category) throw new Error(`Category ${categoryId} not found`);
     return category;
@@ -197,6 +209,7 @@ export class DexieAdapter implements IDatabaseAdapter {
       transactions.sort((a, b) => {
         const aVal = a[sortBy as keyof Transaction];
         const bVal = b[sortBy as keyof Transaction];
+        if (aVal === undefined || bVal === undefined) return 0;
         if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
         if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
         return 0;
@@ -222,10 +235,26 @@ export class DexieAdapter implements IDatabaseAdapter {
   async createTransaction(userId: string, input: CreateTransactionInput): Promise<Transaction> {
     const now = new Date();
     const transaction: Transaction = {
-      id: generateId(),
+      id: generateTransactionId(),
       userId,
-      ...input,
-      date: input.date ?? now,
+      accountId: input.accountId,
+      // Parse amount from string to number
+      amount: typeof input.amount === 'string' ? parseFloat(input.amount) : input.amount,
+      type: input.type,
+      categoryId: input.categoryId ?? '',
+      subcategoryId: input.subcategoryId,
+      description: input.description,
+      // Convert string date to Date object
+      date: input.date ? new Date(input.date) : now,
+      tags: [],  // Not in input schema yet
+      location: input.location,
+      receipt: undefined,  // Receipt upload not implemented yet
+      isRecurring: !!input.recurring,
+      recurringId: input.recurring ? generateTransactionId() : undefined,
+      toAccountId: input.toAccountId,
+      goalId: input.goalId,
+      isEssential: input.isEssential,
+      synced: false,
       createdAt: now,
       updatedAt: now,
     };
@@ -279,8 +308,28 @@ export class DexieAdapter implements IDatabaseAdapter {
       // Revert old transaction's balance changes
       await this.revertTransactionBalance(oldTransaction);
 
+      // Prepare updates with proper type conversions
+      const processedUpdates: Partial<Transaction> = {};
+      if (updates.amount !== undefined) {
+        processedUpdates.amount = typeof updates.amount === 'string' ? parseFloat(updates.amount) : updates.amount;
+      }
+      if (updates.date !== undefined) {
+        processedUpdates.date = new Date(updates.date);
+      }
+      // Copy other fields
+      if (updates.type !== undefined) processedUpdates.type = updates.type;
+      if (updates.description !== undefined) processedUpdates.description = updates.description;
+      if (updates.accountId !== undefined) processedUpdates.accountId = updates.accountId;
+      if (updates.categoryId !== undefined) processedUpdates.categoryId = updates.categoryId;
+      if (updates.subcategoryId !== undefined) processedUpdates.subcategoryId = updates.subcategoryId;
+      if (updates.toAccountId !== undefined) processedUpdates.toAccountId = updates.toAccountId;
+      if (updates.goalId !== undefined) processedUpdates.goalId = updates.goalId;
+      if (updates.isEssential !== undefined) processedUpdates.isEssential = updates.isEssential;
+      if (updates.location !== undefined) processedUpdates.location = updates.location;
+      processedUpdates.updatedAt = new Date();
+
       // Update transaction
-      await db.transactions.update(transactionId, { ...updates, updatedAt: new Date() });
+      await db.transactions.update(transactionId, processedUpdates);
 
       const updatedTransaction = await db.transactions.get(transactionId);
       if (!updatedTransaction)
@@ -316,6 +365,7 @@ export class DexieAdapter implements IDatabaseAdapter {
       transactions.sort((a, b) => {
         const aVal = a[sortBy as keyof Transaction];
         const bVal = b[sortBy as keyof Transaction];
+        if (aVal === undefined || bVal === undefined) return 0;
         if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
         if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
         return 0;
@@ -341,6 +391,7 @@ export class DexieAdapter implements IDatabaseAdapter {
       transactions.sort((a, b) => {
         const aVal = a[sortBy as keyof Transaction];
         const bVal = b[sortBy as keyof Transaction];
+        if (aVal === undefined || bVal === undefined) return 0;
         if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
         if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
         return 0;
@@ -365,9 +416,14 @@ export class DexieAdapter implements IDatabaseAdapter {
     if (!filters) return budgets;
 
     return budgets.filter((budget) => {
-      if (filters.categoryId && budget.categoryId !== filters.categoryId) return false;
+      // Check if budget includes the filtered category
+      if (filters.categoryId && !budget.categoryIds.includes(filters.categoryId)) return false;
       if (filters.period && budget.period !== filters.period) return false;
       if (filters.isActive !== undefined && budget.isActive !== filters.isActive) return false;
+      if (filters.search) {
+        const search = filters.search.toLowerCase();
+        if (!budget.name.toLowerCase().includes(search)) return false;
+      }
       return true;
     });
   }
@@ -379,11 +435,23 @@ export class DexieAdapter implements IDatabaseAdapter {
   async createBudget(userId: string, input: CreateBudgetInput): Promise<Budget> {
     const now = new Date();
     const budget: Budget = {
-      id: generateId(),
+      id: generateBudgetId(),
       userId,
-      ...input,
+      name: input.name,
+      categoryIds: input.categoryIds,
+      amount: input.amount,
+      period: input.period,
+      // Convert string dates to Date objects, startDate is required
+      startDate: input.startDate ? new Date(input.startDate) : now,
+      endDate: input.endDate ? new Date(input.endDate) : undefined,
       spent: 0,
+      rollover: input.rollover ?? false,
       isActive: input.isActive ?? true,
+      // Default alerts configuration - use alertThresholds from input if provided
+      alerts: {
+        thresholds: input.alertThresholds ?? [50, 80, 100],
+        enabled: true,
+      },
       createdAt: now,
       updatedAt: now,
     };
@@ -393,7 +461,25 @@ export class DexieAdapter implements IDatabaseAdapter {
   }
 
   async updateBudget(budgetId: string, updates: UpdateBudgetInput): Promise<Budget> {
-    await db.budgets.update(budgetId, { ...updates, updatedAt: new Date() });
+    // Prepare updates with proper type conversions
+    const processedUpdates: Partial<Budget> = {};
+    if (updates.name !== undefined) processedUpdates.name = updates.name;
+    if (updates.categoryIds !== undefined) processedUpdates.categoryIds = updates.categoryIds;
+    if (updates.amount !== undefined) processedUpdates.amount = updates.amount;
+    if (updates.period !== undefined) processedUpdates.period = updates.period;
+    if (updates.startDate !== undefined) processedUpdates.startDate = new Date(updates.startDate);
+    if (updates.endDate !== undefined) processedUpdates.endDate = new Date(updates.endDate);
+    if (updates.rollover !== undefined) processedUpdates.rollover = updates.rollover;
+    if (updates.isActive !== undefined) processedUpdates.isActive = updates.isActive;
+    if (updates.alertThresholds !== undefined) {
+      processedUpdates.alerts = {
+        thresholds: updates.alertThresholds,
+        enabled: true,
+      };
+    }
+    processedUpdates.updatedAt = new Date();
+
+    await db.budgets.update(budgetId, processedUpdates);
     const budget = await db.budgets.get(budgetId);
     if (!budget) throw new Error(`Budget ${budgetId} not found`);
     return budget;
@@ -418,7 +504,20 @@ export class DexieAdapter implements IDatabaseAdapter {
 
     return goals.filter((goal) => {
       if (filters.type && goal.type !== filters.type) return false;
-      if (filters.status && goal.status !== filters.status) return false;
+      // Map isArchived filter to status (archived goals have status 'cancelled')
+      if (filters.isArchived !== undefined) {
+        const isArchived = goal.status === 'cancelled';
+        if (isArchived !== filters.isArchived) return false;
+      }
+      if (filters.isCompleted !== undefined) {
+        const isCompleted = goal.status === 'completed';
+        if (isCompleted !== filters.isCompleted) return false;
+      }
+      if (filters.accountId && goal.accountId !== filters.accountId) return false;
+      if (filters.search) {
+        const search = filters.search.toLowerCase();
+        if (!goal.name.toLowerCase().includes(search)) return false;
+      }
       return true;
     });
   }
@@ -430,11 +529,18 @@ export class DexieAdapter implements IDatabaseAdapter {
   async createGoal(userId: string, input: CreateGoalInput): Promise<Goal> {
     const now = new Date();
     const goal: Goal = {
-      id: generateId(),
+      id: generateGoalId(),
       userId,
-      ...input,
+      name: input.name,
+      type: input.type,
+      targetAmount: input.targetAmount,
       currentAmount: input.currentAmount ?? 0,
-      status: 'active',
+      // Convert string deadline to Date object
+      deadline: input.deadline ? new Date(input.deadline) : undefined,
+      accountId: input.accountId,
+      color: input.color ?? '#5B6EF5',  // Default primary color
+      icon: 'target',  // Goal type has icon field based on the type
+      status: input.isArchived ? 'cancelled' : 'active',  // Map isArchived to status
       createdAt: now,
       updatedAt: now,
     };
@@ -444,7 +550,22 @@ export class DexieAdapter implements IDatabaseAdapter {
   }
 
   async updateGoal(goalId: string, updates: UpdateGoalInput): Promise<Goal> {
-    await db.goals.update(goalId, { ...updates, updatedAt: new Date() });
+    // Prepare updates with proper type conversions
+    const processedUpdates: Partial<Goal> = {};
+    if (updates.name !== undefined) processedUpdates.name = updates.name;
+    if (updates.type !== undefined) processedUpdates.type = updates.type;
+    if (updates.targetAmount !== undefined) processedUpdates.targetAmount = updates.targetAmount;
+    if (updates.currentAmount !== undefined) processedUpdates.currentAmount = updates.currentAmount;
+    if (updates.deadline !== undefined) processedUpdates.deadline = new Date(updates.deadline);
+    if (updates.accountId !== undefined) processedUpdates.accountId = updates.accountId;
+    if (updates.color !== undefined) processedUpdates.color = updates.color;
+    // Map isArchived to status
+    if (updates.isArchived !== undefined) {
+      processedUpdates.status = updates.isArchived ? 'cancelled' : 'active';
+    }
+    processedUpdates.updatedAt = new Date();
+
+    await db.goals.update(goalId, processedUpdates);
     const goal = await db.goals.get(goalId);
     if (!goal) throw new Error(`Goal ${goalId} not found`);
     return goal;
@@ -520,20 +641,22 @@ export class DexieAdapter implements IDatabaseAdapter {
   async getTotalBalance(userId: string, excludeInactive?: boolean): Promise<number> {
     const accounts = await this.getAccounts(
       userId,
-      excludeInactive ? { isActive: true } : undefined
+      excludeInactive ? { isArchived: false } : undefined
     );
     return accounts.reduce((sum, account) => sum + account.balance, 0);
   }
 
   async getNetWorth(userId: string): Promise<number> {
     const accounts = await this.getAccounts(userId);
-    const assets = accounts
-      .filter((a) => a.type !== 'liability')
-      .reduce((sum, a) => sum + a.balance, 0);
-    const liabilities = accounts
-      .filter((a) => a.type === 'liability')
-      .reduce((sum, a) => sum + a.balance, 0);
-    return assets - liabilities;
+    // In v2, credit cards have negative balances, all others are assets
+    const total = accounts.reduce((sum, a) => {
+      // Credit card balances are typically negative (owed amount)
+      if (a.type === 'credit') {
+        return sum + a.balance; // balance is already negative for debt
+      }
+      return sum + a.balance;
+    }, 0);
+    return total;
   }
 
   async getTransactionCount(userId: string, filters?: TransactionFilters): Promise<number> {
@@ -550,15 +673,30 @@ export class DexieAdapter implements IDatabaseAdapter {
     if (filters.type && transaction.type !== filters.type) return false;
     if (filters.accountId && transaction.accountId !== filters.accountId) return false;
     if (filters.categoryId && transaction.categoryId !== filters.categoryId) return false;
-    if (filters.startDate && transaction.date < filters.startDate) return false;
-    if (filters.endDate && transaction.date > filters.endDate) return false;
+    if (filters.subcategoryId && transaction.subcategoryId !== filters.subcategoryId) return false;
+    if (filters.goalId && transaction.goalId !== filters.goalId) return false;
+    
+    // Date filters - convert string dates to Date for comparison
+    if (filters.startDate) {
+      const startDate = new Date(filters.startDate);
+      if (transaction.date < startDate) return false;
+    }
+    if (filters.endDate) {
+      const endDate = new Date(filters.endDate);
+      if (transaction.date > endDate) return false;
+    }
+    
     if (filters.minAmount !== undefined && transaction.amount < filters.minAmount) return false;
     if (filters.maxAmount !== undefined && transaction.amount > filters.maxAmount) return false;
-    if (filters.description) {
-      const desc = transaction.description.toLowerCase();
-      const search = filters.description.toLowerCase();
+    
+    if (filters.search) {
+      const search = filters.search.toLowerCase();
+      const desc = transaction.description?.toLowerCase() ?? '';
       if (!desc.includes(search)) return false;
     }
+    
+    if (filters.isEssential !== undefined && transaction.isEssential !== filters.isEssential) return false;
+    
     return true;
   }
 
