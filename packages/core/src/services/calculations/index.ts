@@ -19,3 +19,16 @@ export {
   calculateGoalProgress,
   calculateRequiredMonthlyContribution,
 } from './goalProgress';
+export type {
+  AccountBalances,
+  CategorySpending,
+  MonthlyStats,
+} from './statistics';
+// Statistics calculations
+export {
+  calculateAccountBalances,
+  calculateAverageTransaction,
+  calculateMonthlyStats,
+  calculateSpendingByCategory,
+  calculateTransactionCounts,
+} from './statistics';
