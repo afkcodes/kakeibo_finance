@@ -33,7 +33,7 @@
 - [ ] Phase 5: Testing & Quality Assurance (0/15)
 - [ ] Phase 6: Documentation & CI/CD (0/9)
 
-**Total Tasks**: 44/141 completed
+**Total Tasks**: 47/141 completed
 
 ---
 
@@ -485,7 +485,7 @@
 **Location**: `apps/web/src/components/`
 **Purpose**: React components using Radix UI + Tailwind CSS
 
-### 3B.1 Web Base Components (3/14)
+### 3B.1 Web Base Components (6/14)
 - [x] Copy `src/components/ui/Button/` → `apps/web/src/components/ui/Button/`
   - [x] ⚠️ Uses browser events (`onClick`)
   - [x] Updated to use `@kakeibo/core` utilities (cn, tv)
@@ -493,9 +493,14 @@
 - [x] Copy `src/components/ui/Input/` → `apps/web/src/components/ui/Input/`
   - [x] ⚠️ Uses browser inputs (labels, aria attributes)
   - [x] Updated to use `@kakeibo/core` utilities (cn)
-- [ ] Copy `src/components/ui/Modal/` → `apps/web/src/components/ui/Modal/`
-  - [ ] ⚠️ Uses `createPortal` (web-only)
+- [x] Copy `src/components/ui/Modal/` → `apps/web/src/components/ui/Modal/`
+  - [x] ⚠️ Uses Radix UI Dialog (web-only)
+  - [x] Installed @radix-ui/react-dialog
 - [x] Copy `src/components/ui/Card/` → `apps/web/src/components/ui/Card/`
+  - [x] Updated to use `@kakeibo/core` utilities (cn)
+- [x] Copy `src/components/ui/Badge/` → `apps/web/src/components/ui/Badge/`
+  - [x] Updated to use `@kakeibo/core` utilities (cn)
+- [x] Copy `src/components/ui/ProgressBar/` → `apps/web/src/components/ui/ProgressBar/`
   - [x] Updated to use `@kakeibo/core` utilities (cn)
 - [ ] Copy `src/components/ui/Modal/` → `apps/web/src/components/ui/Modal/`
   - [ ] ⚠️ Uses `createPortal` (web-only)
