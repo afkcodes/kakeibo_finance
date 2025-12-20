@@ -246,9 +246,9 @@ export class DexieAdapter implements IDatabaseAdapter {
       description: input.description,
       // Convert string date to Date object
       date: input.date ? new Date(input.date) : now,
-      tags: [],  // Not in input schema yet
+      tags: [], // Not in input schema yet
       location: input.location,
-      receipt: undefined,  // Receipt upload not implemented yet
+      receipt: undefined, // Receipt upload not implemented yet
       isRecurring: !!input.recurring,
       recurringId: input.recurring ? generateTransactionId() : undefined,
       toAccountId: input.toAccountId,
@@ -311,7 +311,8 @@ export class DexieAdapter implements IDatabaseAdapter {
       // Prepare updates with proper type conversions
       const processedUpdates: Partial<Transaction> = {};
       if (updates.amount !== undefined) {
-        processedUpdates.amount = typeof updates.amount === 'string' ? parseFloat(updates.amount) : updates.amount;
+        processedUpdates.amount =
+          typeof updates.amount === 'string' ? parseFloat(updates.amount) : updates.amount;
       }
       if (updates.date !== undefined) {
         processedUpdates.date = new Date(updates.date);
@@ -321,7 +322,8 @@ export class DexieAdapter implements IDatabaseAdapter {
       if (updates.description !== undefined) processedUpdates.description = updates.description;
       if (updates.accountId !== undefined) processedUpdates.accountId = updates.accountId;
       if (updates.categoryId !== undefined) processedUpdates.categoryId = updates.categoryId;
-      if (updates.subcategoryId !== undefined) processedUpdates.subcategoryId = updates.subcategoryId;
+      if (updates.subcategoryId !== undefined)
+        processedUpdates.subcategoryId = updates.subcategoryId;
       if (updates.toAccountId !== undefined) processedUpdates.toAccountId = updates.toAccountId;
       if (updates.goalId !== undefined) processedUpdates.goalId = updates.goalId;
       if (updates.isEssential !== undefined) processedUpdates.isEssential = updates.isEssential;
@@ -538,9 +540,9 @@ export class DexieAdapter implements IDatabaseAdapter {
       // Convert string deadline to Date object
       deadline: input.deadline ? new Date(input.deadline) : undefined,
       accountId: input.accountId,
-      color: input.color ?? '#5B6EF5',  // Default primary color
-      icon: 'target',  // Goal type has icon field based on the type
-      status: input.isArchived ? 'cancelled' : 'active',  // Map isArchived to status
+      color: input.color ?? '#5B6EF5', // Default primary color
+      icon: 'target', // Goal type has icon field based on the type
+      status: input.isArchived ? 'cancelled' : 'active', // Map isArchived to status
       createdAt: now,
       updatedAt: now,
     };
@@ -675,7 +677,7 @@ export class DexieAdapter implements IDatabaseAdapter {
     if (filters.categoryId && transaction.categoryId !== filters.categoryId) return false;
     if (filters.subcategoryId && transaction.subcategoryId !== filters.subcategoryId) return false;
     if (filters.goalId && transaction.goalId !== filters.goalId) return false;
-    
+
     // Date filters - convert string dates to Date for comparison
     if (filters.startDate) {
       const startDate = new Date(filters.startDate);
@@ -685,18 +687,19 @@ export class DexieAdapter implements IDatabaseAdapter {
       const endDate = new Date(filters.endDate);
       if (transaction.date > endDate) return false;
     }
-    
+
     if (filters.minAmount !== undefined && transaction.amount < filters.minAmount) return false;
     if (filters.maxAmount !== undefined && transaction.amount > filters.maxAmount) return false;
-    
+
     if (filters.search) {
       const search = filters.search.toLowerCase();
       const desc = transaction.description?.toLowerCase() ?? '';
       if (!desc.includes(search)) return false;
     }
-    
-    if (filters.isEssential !== undefined && transaction.isEssential !== filters.isEssential) return false;
-    
+
+    if (filters.isEssential !== undefined && transaction.isEssential !== filters.isEssential)
+      return false;
+
     return true;
   }
 
