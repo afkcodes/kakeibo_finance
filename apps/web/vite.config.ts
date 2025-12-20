@@ -18,7 +18,7 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '~': fileURLToPath(new URL('./src', import.meta.url)),
       '@kakeibo/core': fileURLToPath(new URL('../../packages/core/src', import.meta.url)),
     },
   },
