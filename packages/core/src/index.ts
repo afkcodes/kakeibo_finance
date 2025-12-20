@@ -13,7 +13,7 @@ export * from './constants';
 // Export all validation schemas
 export * from './schemas';
 // Export all services
-export * from './services/database';
+export * from './services';
 // Export all types
 export * from './types';
 // Export all utilities
