@@ -1,36 +1,12 @@
-import {
-  createRootRoute,
-  createRoute,
-  createRouter,
-  Outlet,
-  RouterProvider,
-} from '@tanstack/react-router';
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
+import { createRouter, RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
-
+import reportWebVitals from './reportWebVitals.ts';
+// Import the generated route tree
+import { routeTree } from './routeTree.gen';
 import './styles.css';
 
-import App from './App.jsx';
-import reportWebVitals from './reportWebVitals.js';
-
-const rootRoute = createRootRoute({
-  component: () => (
-    <>
-      <Outlet />
-      <TanStackRouterDevtools />
-    </>
-  ),
-});
-
-const indexRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/',
-  component: App,
-});
-
-const routeTree = rootRoute.addChildren([indexRoute]);
-
+// Create a new router instance
 const router = createRouter({
   routeTree,
   context: {},
@@ -40,6 +16,14 @@ const router = createRouter({
   defaultPreloadStaleTime: 0,
 });
 
+// Register the router instance for type safety
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router;
+  }
+}
+
+// Render the app
 const rootElement = document.getElementById('app');
 if (rootElement && !rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);

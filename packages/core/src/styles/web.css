@@ -1,0 +1,337 @@
+/**
+ * WEB-SPECIFIC STYLES
+ *
+ * These styles only work on web platforms.
+ * DO NOT import this in React Native apps.
+ *
+ * Includes:
+ * - Hover/focus states
+ * - Animations & keyframes
+ * - Media queries (use breakpoints instead)
+ * - Grid layouts
+ * - Backdrop filters
+ * - Scrollbar styling
+ * - Pseudo-elements
+ * - Web-only utilities
+ */
+
+/* ========== BASE STYLES ========== */
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior-y: contain; /* Disable pull-to-refresh */
+}
+
+body {
+  background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0d0d0d 100%);
+  color: var(--color-surface-50);
+  margin: 0;
+  min-height: 100vh;
+
+  /* App-like feel */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  overscroll-behavior-y: contain;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Allow text selection where needed */
+input,
+textarea,
+[contenteditable="true"],
+.select-text {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  user-select: text;
+}
+
+/* ========== ANIMATIONS ========== */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Animation utility classes */
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-slide-down {
+  animation: slide-down 0.3s ease-out;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s ease-out;
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* ========== HOVER & FOCUS STATES ========== */
+
+.card-glow:hover {
+  box-shadow: 0 0 30px rgba(91, 110, 245, 0.15);
+}
+
+.focus-glow:focus {
+  box-shadow: 0 0 0 3px rgba(91, 110, 245, 0.2);
+}
+
+.btn-gradient {
+  background: linear-gradient(135deg, var(--color-primary-600) 0%, var(--color-primary-700) 100%);
+  transition: all 0.2s ease;
+}
+
+.btn-gradient:hover {
+  background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-600) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(91, 110, 245, 0.3);
+}
+
+/* ========== SCROLLBAR STYLING ========== */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface-900);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-surface-700);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-surface-600);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ========== BACKDROP FILTERS ========== */
+
+.glass {
+  background: rgba(39, 39, 42, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ========== GRADIENT TEXT ========== */
+
+.gradient-text {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-400) 0%,
+    var(--color-primary-600) 50%,
+    var(--color-primary-700) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ========== INPUT STYLING ========== */
+
+/* Hide native date input icons */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  display: none !important;
+  -webkit-appearance: none !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  right: 0 !important;
+}
+
+input[type="date"]::-webkit-inner-spin-button,
+input[type="date"]::-webkit-clear-button {
+  display: none !important;
+  -webkit-appearance: none !important;
+}
+
+input[type="date"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* ========== CHART LIBRARY FIXES ========== */
+
+/* Recharts - Remove focus outlines on tap */
+.recharts-wrapper,
+.recharts-surface,
+.recharts-wrapper svg,
+.recharts-sector,
+.recharts-bar-rectangle,
+.recharts-area,
+.recharts-line,
+.recharts-pie,
+.recharts-pie-sector,
+.recharts-layer,
+.recharts-active-shape {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+.recharts-wrapper:focus,
+.recharts-wrapper:focus-visible,
+.recharts-surface:focus,
+.recharts-surface:focus-visible,
+.recharts-sector:focus,
+.recharts-bar-rectangle:focus,
+.recharts-wrapper *:focus,
+.recharts-wrapper *:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.recharts-responsive-container,
+.recharts-responsive-container * {
+  -webkit-tap-highlight-color: transparent !important;
+  outline: none !important;
+}
+
+.recharts-wrapper svg:focus,
+.recharts-wrapper path:focus,
+.recharts-wrapper rect:focus,
+.recharts-wrapper circle:focus {
+  outline: none !important;
+}
+
+/* ========== UTILITY CLASSES ========== */
+
+/* Safe area padding for mobile web */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Income/Expense semantic colors */
+.text-income {
+  color: var(--color-success-400);
+}
+
+.text-expense {
+  color: var(--color-danger-400);
+}
+
+.bg-income {
+  background: rgba(52, 211, 153, 0.15);
+}
+
+.bg-expense {
+  background: rgba(251, 113, 133, 0.15);
+}
+
+/* Squircle - iOS style rounded corners (web approximation) */
+.squircle {
+  border-radius: 24px;
+}
+
+/* Number/Amount styling */
+.font-amount {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* ========== MEDIA QUERIES ========== */
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Hover-capable devices only */
+@media (hover: hover) {
+  .hover\:scale-105:hover {
+    transform: scale(1.05);
+  }
+
+  .hover\:bg-surface-700:hover {
+    background-color: var(--color-surface-700);
+  }
+
+  .hover\:text-primary-400:hover {
+    color: var(--color-primary-400);
+  }
+}
