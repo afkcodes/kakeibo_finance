@@ -21,7 +21,7 @@
 
 ### **Web Platform Only** 🌐
 - [x] Phase 3A: Web Database - `apps/web/src/services/db/` (6/6) ✅
-- [ ] Phase 3B: Web UI Components - `apps/web/src/components/` (0/24)
+- [ ] Phase 3B: Web UI Components - `apps/web/src/components/` (15/24)
 - [ ] Phase 3C: Web Pages & Features - `apps/web/src/pages/` (0/13)
 
 ### **Native Platform Only** 📱
@@ -523,15 +523,23 @@
   - [ ] ⚠️ Needs toast system (defer to later)
 - [x] Create `apps/web/src/components/ui/index.ts` barrel export
 
-### 3B.2 Web Layout Components (0/5)
-- [ ] Copy `src/components/layout/AppShell/` → `apps/web/src/components/layout/AppShell/`
-  - [ ] ⚠️ Web-specific layout (desktop/mobile responsive)
-- [ ] Copy `src/components/layout/Navbar/` → `apps/web/src/components/layout/Navbar/`
-- [ ] Copy `src/components/layout/Sidebar/` → `apps/web/src/components/layout/Sidebar/`
-  - [ ] ⚠️ Desktop only (media queries)
-- [ ] Copy `src/components/layout/BottomNav/` → `apps/web/src/components/layout/BottomNav/`
-  - [ ] ⚠️ Mobile only (media queries)
-- [ ] Copy `src/components/layout/FloatingActionButton/` → `apps/web/src/components/layout/FloatingActionButton/`
+### 3B.2 Web Layout Components (5/5) ✅
+- [x] Copy `src/components/layout/AppShell/` → `apps/web/src/components/layout/AppShell/`
+  - [x] ⚠️ Web-specific layout (desktop/mobile responsive)
+  - [x] Removed framer-motion dependencies (used CSS transitions)
+  - [x] Placeholder TODOs for store integration
+- [x] Copy `src/components/layout/Navbar/` → `apps/web/src/components/layout/Navbar/`
+  - [x] Updated to use Button component from ui/
+  - [x] Placeholder TODOs for theme and sidebar toggles
+- [x] Copy `src/components/layout/Sidebar/` → `apps/web/src/components/layout/Sidebar/`
+  - [x] ⚠️ Desktop only (media queries)
+  - [x] Removed framer-motion (used CSS transitions)
+- [x] Copy `src/components/layout/BottomNav/` → `apps/web/src/components/layout/BottomNav/`
+  - [x] ⚠️ Mobile only (media queries)
+  - [x] Removed framer-motion (used CSS transitions)
+- [x] Copy `src/components/layout/FloatingActionButton/` → `apps/web/src/components/layout/FloatingActionButton/`
+  - [x] Removed framer-motion (used CSS transitions with active:scale)
+- [x] Create `apps/web/src/components/layout/index.ts` barrel export
 
 ### 3B.3 Web Feature Components (0/5)
 - [ ] Copy `src/components/features/transactions/` → `apps/web/src/components/features/transactions/`
