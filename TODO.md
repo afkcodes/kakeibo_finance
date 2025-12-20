@@ -33,7 +33,7 @@
 - [ ] Phase 5: Testing & Quality Assurance (0/15)
 - [ ] Phase 6: Documentation & CI/CD (0/9)
 
-**Total Tasks**: 42/141 completed
+**Total Tasks**: 44/141 completed
 
 ---
 
@@ -485,12 +485,18 @@
 **Location**: `apps/web/src/components/`
 **Purpose**: React components using Radix UI + Tailwind CSS
 
-### 3B.1 Web Base Components (1/14)
+### 3B.1 Web Base Components (3/14)
 - [x] Copy `src/components/ui/Button/` → `apps/web/src/components/ui/Button/`
   - [x] ⚠️ Uses browser events (`onClick`)
   - [x] Updated to use `@kakeibo/core` utilities (cn, tv)
   - [x] Installed lucide-react for Loader2 icon
-- [ ] Copy `src/components/ui/Input/` → `apps/web/src/components/ui/Input/`
+- [x] Copy `src/components/ui/Input/` → `apps/web/src/components/ui/Input/`
+  - [x] ⚠️ Uses browser inputs (labels, aria attributes)
+  - [x] Updated to use `@kakeibo/core` utilities (cn)
+- [ ] Copy `src/components/ui/Modal/` → `apps/web/src/components/ui/Modal/`
+  - [ ] ⚠️ Uses `createPortal` (web-only)
+- [x] Copy `src/components/ui/Card/` → `apps/web/src/components/ui/Card/`
+  - [x] Updated to use `@kakeibo/core` utilities (cn)
 - [ ] Copy `src/components/ui/Modal/` → `apps/web/src/components/ui/Modal/`
   - [ ] ⚠️ Uses `createPortal` (web-only)
 - [ ] Copy `src/components/ui/Select/` → `apps/web/src/components/ui/Select/`
