@@ -33,7 +33,7 @@
 - [ ] Phase 5: Testing & Quality Assurance (0/15)
 - [ ] Phase 6: Documentation & CI/CD (0/9)
 
-**Total Tasks**: 50/141 completed
+**Total Tasks**: 51/141 completed
 
 ---
 
@@ -485,7 +485,7 @@
 **Location**: `apps/web/src/components/`
 **Purpose**: React components using Radix UI + Tailwind CSS
 
-### 3B.1 Web Base Components (9/14)
+### 3B.1 Web Base Components (10/14)
 - [x] Copy `src/components/ui/Button/` → `apps/web/src/components/ui/Button/`
   - [x] ⚠️ Uses browser events (`onClick`)
   - [x] Updated to use `@kakeibo/core` utilities (cn, tv)
@@ -511,22 +511,17 @@
   - [x] Updated to use `@kakeibo/core` utilities (cn, tv)
 - [x] Copy `src/components/ui/CategoryIcon/` → `apps/web/src/components/ui/CategoryIcon/`
   - [x] All 70+ Lucide icons mapped
-- [ ] Copy `src/components/ui/Modal/` → `apps/web/src/components/ui/Modal/`
-  - [ ] ⚠️ Uses `createPortal` (web-only)
-- [ ] Copy `src/components/ui/Select/` → `apps/web/src/components/ui/Select/`
-  - [ ] ⚠️ Uses Radix UI (web-only)
-- [ ] Copy `src/components/ui/Card/` → `apps/web/src/components/ui/Card/`
-- [ ] Copy `src/components/ui/Badge/` → `apps/web/src/components/ui/Badge/`
-- [ ] Copy `src/components/ui/Checkbox/` → `apps/web/src/components/ui/Checkbox/`
-  - [ ] ⚠️ Uses Radix UI (web-only)
-- [ ] Copy `src/components/ui/ProgressBar/` → `apps/web/src/components/ui/ProgressBar/`
-- [ ] Copy `src/components/ui/CategoryIcon/` → `apps/web/src/components/ui/CategoryIcon/`
-  - [ ] ⚠️ Uses Lucide React (web version)
 - [ ] Copy `src/components/ui/CategorySelect/` → `apps/web/src/components/ui/CategorySelect/`
+  - [ ] ⚠️ Complex component with subcategory support (defer to later)
 - [ ] Copy `src/components/ui/TieredCategorySelect/` → `apps/web/src/components/ui/TieredCategorySelect/`
+  - [ ] ⚠️ Complex component (defer to later)
 - [ ] Copy `src/components/ui/MultiCategorySelect/` → `apps/web/src/components/ui/MultiCategorySelect/`
+  - [ ] ⚠️ Complex component (defer to later)
+- [ ] Copy `src/components/ui/SubcategorySelect/` → `apps/web/src/components/ui/SubcategorySelect/`
+  - [ ] ⚠️ Complex component (defer to later)
 - [ ] Copy `src/components/ui/Toast/` → `apps/web/src/components/ui/Toast/`
-- [ ] Create `apps/web/src/components/ui/index.ts` barrel export
+  - [ ] ⚠️ Needs toast system (defer to later)
+- [x] Create `apps/web/src/components/ui/index.ts` barrel export
 
 ### 3B.2 Web Layout Components (0/5)
 - [ ] Copy `src/components/layout/AppShell/` → `apps/web/src/components/layout/AppShell/`
