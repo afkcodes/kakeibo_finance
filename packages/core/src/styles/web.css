@@ -300,6 +300,8 @@ input[type="date"] {
 /* Squircle - iOS style rounded corners (web approximation) */
 .squircle {
   border-radius: 24px;
+  corner-shape: squircle;
+
 }
 
 /* Number/Amount styling */
