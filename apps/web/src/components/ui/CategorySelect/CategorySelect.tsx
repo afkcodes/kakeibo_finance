@@ -5,7 +5,7 @@
 
 import { cn } from '@kakeibo/core';
 import * as Popover from '@radix-ui/react-popover';
-import { Check, ChevronDown, ChevronRight, X } from 'lucide-react';
+import { Check, ChevronDown, X } from 'lucide-react';
 import { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 import { CategoryIcon } from '../CategoryIcon';
 
@@ -81,18 +81,28 @@ const CategorySelect = forwardRef<HTMLInputElement, CategorySelectProps>(
       ? subcategories.find((s) => s.categoryId === value && s.id === subcategoryValue)
       : undefined;
 
-    // Get subcategories for a category
-    const getSubcategoriesForCategory = (categoryId: string) => {
-      return subcategories.filter((s) => s.categoryId === categoryId);
-    };
+    // Auto-expand all categories with subcategories on mount
+    useEffect(() => {
+      if (subcategories.length > 0) {
+        const categoriesWithSubs = new Set<string>();
+        options.forEach((option) => {
+          const hasSubs = subcategories.some((s) => s.categoryId === option.value);
+          if (hasSubs) {
+            categoriesWithSubs.add(option.value);
+          }
+        });
+        setExpandedCategories(categoriesWithSubs);
+      }
+    }, [subcategories, options]);
 
     // Smart filter: search both categories AND subcategories
     const filteredResults = useMemo((): FilteredCategory[] => {
       const query = searchQuery.toLowerCase().trim();
 
-      return options
+      const results = options
         .map((category) => {
-          const allSubcategories = getSubcategoriesForCategory(category.value);
+          // Get subcategories for this category
+          const allSubcategories = subcategories.filter((s) => s.categoryId === category.value);
           const categoryMatches = !query || category.label.toLowerCase().includes(query);
 
           if (!query) {
@@ -137,7 +147,16 @@ const CategorySelect = forwardRef<HTMLInputElement, CategorySelectProps>(
           return null;
         })
         .filter((result): result is FilteredCategory => result !== null);
-    }, [options, searchQuery, getSubcategoriesForCategory]);
+
+      // Sort: put "others" or "other" at the bottom
+      return results.sort((a, b) => {
+        const aIsOther = a.category.label.toLowerCase().includes('other');
+        const bIsOther = b.category.label.toLowerCase().includes('other');
+        if (aIsOther && !bIsOther) return 1;
+        if (!aIsOther && bIsOther) return -1;
+        return 0;
+      });
+    }, [options, searchQuery, subcategories]);
 
     // Build flat list for keyboard navigation
     const flatItems = useMemo(() => {
@@ -173,7 +192,8 @@ const CategorySelect = forwardRef<HTMLInputElement, CategorySelectProps>(
     // Reset highlight when filtered options change
     useEffect(() => {
       setHighlightedIndex(0);
-    }, [flatItems]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Scroll highlighted item into view
     useEffect(() => {
@@ -200,19 +220,6 @@ const CategorySelect = forwardRef<HTMLInputElement, CategorySelectProps>(
       setOpen(false);
       setSearchQuery('');
       setExpandedCategories(new Set());
-    };
-
-    const toggleCategoryExpand = (categoryValue: string, e: React.MouseEvent) => {
-      e.stopPropagation();
-      setExpandedCategories((prev) => {
-        const next = new Set(prev);
-        if (next.has(categoryValue)) {
-          next.delete(categoryValue);
-        } else {
-          next.add(categoryValue);
-        }
-        return next;
-      });
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -291,7 +298,15 @@ const CategorySelect = forwardRef<HTMLInputElement, CategorySelectProps>(
         <Popover.Root open={open} onOpenChange={setOpen}>
           <Popover.Anchor asChild>
             <div
+              role="button"
+              tabIndex={disabled ? -1 : 0}
               onClick={() => !disabled && setOpen(true)}
+              onKeyDown={(e) => {
+                if ((e.key === 'Enter' || e.key === ' ') && !disabled) {
+                  e.preventDefault();
+                  setOpen(true);
+                }
+              }}
               className={cn(
                 'relative flex items-center gap-2 rounded-lg px-3 h-11 text-[14px] transition-colors duration-200 cursor-text',
                 'border bg-surface-800/60',
@@ -365,21 +380,20 @@ const CategorySelect = forwardRef<HTMLInputElement, CategorySelectProps>(
               className={cn(
                 'overflow-hidden rounded-lg border border-surface-700 bg-surface-800 shadow-xl',
                 'animate-in fade-in-0 zoom-in-95',
-                'z-50 w-[var(--radix-popover-trigger-width)]'
+                'z-50 w-(--radix-popover-trigger-width)'
               )}
               side="bottom"
               sideOffset={4}
               avoidCollisions={false}
               onOpenAutoFocus={(e: Event) => e.preventDefault()}
             >
-              <div ref={listRef} className="p-1.5 max-h-[320px] overflow-y-auto">
+              <div ref={listRef} className="p-1.5 max-h-80 overflow-y-auto">
                 {filteredResults.length === 0 ? (
                   <div className="px-3 py-6 text-center text-[13px] text-surface-500">
                     No categories found
                   </div>
                 ) : (
                   filteredResults.map(({ category, subcategories: subs, matchType }) => {
-                    const isExpanded = searchQuery || expandedCategories.has(category.value);
                     const hasSubcategories = subs.length > 0;
                     const categoryIndex = ++currentIndex;
 
@@ -387,8 +401,16 @@ const CategorySelect = forwardRef<HTMLInputElement, CategorySelectProps>(
                       <div key={category.value}>
                         {/* Category row */}
                         <div
+                          role="button"
+                          tabIndex={0}
                           data-index={categoryIndex}
                           onClick={() => handleSelectCategory(category)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              handleSelectCategory(category);
+                            }
+                          }}
                           onMouseEnter={() => setHighlightedIndex(categoryIndex)}
                           className={cn(
                             'w-full flex items-center gap-2 px-2 py-2 rounded-lg text-[14px] cursor-pointer select-none outline-none text-left',
@@ -398,23 +420,6 @@ const CategorySelect = forwardRef<HTMLInputElement, CategorySelectProps>(
                             category.value === value && !subcategoryValue && 'text-primary-400'
                           )}
                         >
-                          {/* Expand chevron */}
-                          {hasSubcategories && (
-                            <button
-                              type="button"
-                              onClick={(e) => toggleCategoryExpand(category.value, e)}
-                              className="p-0.5 rounded hover:bg-surface-600/50 text-surface-500 hover:text-surface-300"
-                            >
-                              <ChevronRight
-                                className={cn(
-                                  'w-3.5 h-3.5 transition-transform duration-150',
-                                  isExpanded && 'rotate-90'
-                                )}
-                              />
-                            </button>
-                          )}
-                          {!hasSubcategories && <div className="w-4.5" />}
-
                           {category.icon && (
                             <span
                               className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
@@ -431,8 +436,8 @@ const CategorySelect = forwardRef<HTMLInputElement, CategorySelectProps>(
                           )}
                         </div>
 
-                        {/* Subcategories */}
-                        {isExpanded && hasSubcategories && (
+                        {/* Subcategories - always shown */}
+                        {hasSubcategories && (
                           <div className="ml-6 border-l border-surface-700/50 pl-2 mb-1">
                             {subs.map((sub) => {
                               const subIndex = ++currentIndex;
@@ -444,9 +449,17 @@ const CategorySelect = forwardRef<HTMLInputElement, CategorySelectProps>(
 
                               return (
                                 <div
+                                  role="button"
+                                  tabIndex={0}
                                   key={sub.id}
                                   data-index={subIndex}
                                   onClick={() => handleSelectSubcategory(category, sub)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                      e.preventDefault();
+                                      handleSelectSubcategory(category, sub);
+                                    }
+                                  }}
                                   onMouseEnter={() => setHighlightedIndex(subIndex)}
                                   className={cn(
                                     'flex items-center gap-2 px-2 py-1.5 rounded-lg text-[13px] cursor-pointer select-none',

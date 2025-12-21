@@ -5,13 +5,13 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { Account, Category, Transaction, TransactionType } from '@kakeibo/core';
-import { createTransactionSchema } from '@kakeibo/core';
+import { createTransactionSchema, getSubcategoriesForCategory } from '@kakeibo/core';
 import { format } from 'date-fns';
 import { ArrowRightLeft, Minus, Plus } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import type { z } from 'zod';
-import { useAccounts, useCategories, useTransactionActions } from '../../../hooks';
+import { useAccounts, useCategories, useCurrency, useTransactionActions } from '../../../hooks';
 import { Button } from '../../ui/Button';
 import type { CategorySelection } from '../../ui/CategorySelect';
 import { CategorySelect } from '../../ui/CategorySelect';
@@ -61,6 +61,7 @@ export const AddTransactionModal = ({
 }: AddTransactionModalProps) => {
   const accounts = useAccounts(userId);
   const categories = useCategories(userId);
+  const { currencySymbol } = useCurrency();
   const { addTransaction, updateTransaction } = useTransactionActions();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -136,6 +137,21 @@ export const AddTransactionModal = ({
     categories?.filter(
       (c: Category) => c.type === (activeType === 'transfer' ? 'expense' : activeType)
     ) || [];
+
+  // Get all subcategories for filtered categories
+  const allSubcategories = useMemo(() => {
+    const subs: Array<{ id: string; name: string; categoryId: string }> = [];
+    filteredCategories.forEach((category) => {
+      const categorySubs = getSubcategoriesForCategory(category.name);
+      categorySubs.forEach((sub) => {
+        subs.push({
+          ...sub,
+          categoryId: category.id,
+        });
+      });
+    });
+    return subs;
+  }, [filteredCategories]);
 
   const onSubmit = async (data: TransactionFormData) => {
     setIsSubmitting(true);
@@ -226,7 +242,8 @@ export const AddTransactionModal = ({
             className={`flex items-center gap-0.5 text-base font-medium ${currentTypeConfig.color}`}
           >
             {activeType === 'expense' && <Minus className="w-4 h-4" />}
-            {activeType === 'income' && <Plus className="w-4 h-4" />}$
+            {activeType === 'income' && <Plus className="w-4 h-4" />}
+            {currencySymbol}
           </span>
           <input
             type="number"
@@ -299,7 +316,7 @@ export const AddTransactionModal = ({
                   icon: c.icon,
                   color: c.color,
                 }))}
-                subcategories={[]}
+                subcategories={allSubcategories}
                 placeholder="Search categories..."
                 value={field.value || ''}
                 subcategoryValue={watch('subcategoryId')}

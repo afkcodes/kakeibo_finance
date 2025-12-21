@@ -121,7 +121,7 @@ const Select = forwardRef<HTMLButtonElement, SelectProps>(
               position="popper"
               sideOffset={4}
             >
-              <SelectPrimitive.Viewport className="p-1.5 max-h-[280px]">
+              <SelectPrimitive.Viewport className="p-1.5 max-h-70">
                 {options.map((option) => {
                   const IconComponent = option.icon ? getIcon(option.icon) : null;
                   return (

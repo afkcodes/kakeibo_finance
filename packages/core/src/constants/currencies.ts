@@ -131,6 +131,20 @@ export const currencies: Record<string, CurrencyInfo> = {
 export const currencyCodes = Object.keys(currencies).sort();
 
 /**
+ * Currency options for UI select components
+ * Formatted as { value, label } pairs with symbols
+ *
+ * @example
+ * ```tsx
+ * <Select options={currencyOptions} />
+ * ```
+ */
+export const currencyOptions = currencyCodes.map((code) => ({
+  value: code,
+  label: `${code} (${currencies[code].symbol})`,
+}));
+
+/**
  * Get currency symbol by code
  *
  * @param code - Currency code (e.g., 'USD', 'EUR')
