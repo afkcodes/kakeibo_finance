@@ -581,6 +581,114 @@ export class DexieAdapter implements IDatabaseAdapter {
     await db.goals.update(goalId, { currentAmount: amount, updatedAt: new Date() });
   }
 
+  async contributeToGoal(
+    goalId: string,
+    amount: number,
+    accountId: string,
+    description?: string
+  ): Promise<Transaction> {
+    const goal = await db.goals.get(goalId);
+    if (!goal) throw new Error('Goal not found');
+
+    const account = await db.accounts.get(accountId);
+    if (!account) throw new Error('Account not found');
+
+    const newAmount = goal.currentAmount + amount;
+    const transactionId = generateTransactionId();
+
+    const transaction: Transaction = {
+      id: transactionId,
+      userId: goal.userId,
+      type: 'goal-contribution',
+      amount,
+      description: description || `Contribution to ${goal.name}`,
+      accountId,
+      categoryId: '', // Goal transactions don't require category
+      goalId,
+      date: new Date(),
+      tags: [],
+      isRecurring: false,
+      synced: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    await db.transaction('rw', [db.goals, db.accounts, db.transactions], async () => {
+      // Update goal amount
+      await db.goals.update(goalId, {
+        currentAmount: newAmount,
+        updatedAt: new Date(),
+      });
+
+      // Deduct from account
+      await db.accounts.update(accountId, {
+        balance: account.balance - amount,
+        updatedAt: new Date(),
+      });
+
+      // Create transaction
+      await db.transactions.add(transaction);
+    });
+
+    return transaction;
+  }
+
+  async withdrawFromGoal(
+    goalId: string,
+    amount: number,
+    accountId: string,
+    description?: string
+  ): Promise<Transaction> {
+    const goal = await db.goals.get(goalId);
+    if (!goal) throw new Error('Goal not found');
+
+    if (goal.currentAmount < amount) {
+      throw new Error('Insufficient goal balance');
+    }
+
+    const account = await db.accounts.get(accountId);
+    if (!account) throw new Error('Account not found');
+
+    const newAmount = goal.currentAmount - amount;
+    const transactionId = generateTransactionId();
+
+    const transaction: Transaction = {
+      id: transactionId,
+      userId: goal.userId,
+      type: 'goal-withdrawal',
+      amount,
+      description: description || `Withdrawal from ${goal.name}`,
+      accountId,
+      categoryId: '', // Goal transactions don't require category
+      goalId,
+      date: new Date(),
+      tags: [],
+      isRecurring: false,
+      synced: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    await db.transaction('rw', [db.goals, db.accounts, db.transactions], async () => {
+      // Update goal amount
+      await db.goals.update(goalId, {
+        currentAmount: newAmount,
+        updatedAt: new Date(),
+      });
+
+      // Credit to account
+      await db.accounts.update(accountId, {
+        balance: account.balance + amount,
+        updatedAt: new Date(),
+      });
+
+      // Create transaction
+      await db.transactions.add(transaction);
+    });
+
+    return transaction;
+  }
+
   // ==================== Backup & Restore ====================
 
   async exportDatabase(userId?: string): Promise<string> {

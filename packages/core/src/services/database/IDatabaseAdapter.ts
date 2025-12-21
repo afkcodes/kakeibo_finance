@@ -354,6 +354,38 @@ export interface IDatabaseAdapter {
    */
   updateGoalAmount(goalId: string, amount: number): Promise<void>;
 
+  /**
+   * Contribute to a goal (adds to current amount and creates transaction)
+   *
+   * @param goalId - Goal ID
+   * @param amount - Amount to contribute
+   * @param accountId - Account to deduct from
+   * @param description - Optional transaction description
+   * @returns Created transaction
+   */
+  contributeToGoal(
+    goalId: string,
+    amount: number,
+    accountId: string,
+    description?: string
+  ): Promise<Transaction>;
+
+  /**
+   * Withdraw from a goal (subtracts from current amount and creates transaction)
+   *
+   * @param goalId - Goal ID
+   * @param amount - Amount to withdraw
+   * @param accountId - Account to credit to
+   * @param description - Optional transaction description
+   * @returns Created transaction
+   */
+  withdrawFromGoal(
+    goalId: string,
+    amount: number,
+    accountId: string,
+    description?: string
+  ): Promise<Transaction>;
+
   // ==================== Backup & Restore ====================
 
   /**

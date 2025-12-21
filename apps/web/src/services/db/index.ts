@@ -39,3 +39,6 @@ class KakeiboDatabase extends Dexie {
 
 // Create and export the database instance
 export const db = new KakeiboDatabase();
+
+// Export adapter singleton
+export { adapter } from './adapter';
