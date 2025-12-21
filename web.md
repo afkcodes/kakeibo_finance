@@ -15,7 +15,7 @@
 - [x] Add toast to settings changes (currency, date format, theme, notifications)
 - [ ] Replace console.error calls with error toasts (optional - already have try/catch)
 
-## 2. Authentication (Placeholder - needs real implementation) 🔴 HIGH PRIORITY
+## 2. Authentication ✅ COMPLETED (Dec 21, 2024)
 - [x] Replace hardcoded guest user in useAuth hook
 - [x] Set up Supabase project and environment variables
 - [x] Implement Supabase authentication service
@@ -25,9 +25,15 @@
 - [x] User profile display (avatar, email in Settings)
 - [x] Sign in with Google (WelcomePage + Settings)
 - [x] Sign out with data retention option (Settings page)
+- [x] Protected routes with TanStack Router (redirect to welcome if no user)
+- [x] Route guards using _authenticated layout + beforeLoad
+- [x] Auth error handling with toast notifications
+- [x] Profile image fallback when Google photo unavailable
+- [x] Fix auto-guest-user creation (explicit user action only)
 - [ ] Guest-to-authenticated migration flow (transfer data) - TODO
-- [ ] Protected routes (redirect to welcome if not authenticated) - TODO
-- [ ] Auth error handling with toast notifications - PARTIALLY DONE
+- [ ] Apple OAuth provider - TODO (Later)
+- [ ] GitHub OAuth provider - TODO (Later)
+- [ ] Avatar upload functionality - TODO (Not Needed)
 
 ## 3. Data Import/Export (Placeholder functions) 🔴 HIGH PRIORITY
 - [ ] Export entire database to JSON (Settings page button)

@@ -440,4 +440,35 @@ export interface IDatabaseAdapter {
    * @returns Transaction count
    */
   getTransactionCount(userId: string, filters?: TransactionFilters): Promise<number>;
+
+  // ==================== Data Migration ====================
+
+  /**
+   * Migrate all data from guest user to authenticated user
+   *
+   * Transfers:
+   * - Transactions (updates userId)
+   * - Budgets (updates userId)
+   * - Goals (updates userId)
+   * - Accounts (updates userId)
+   * - Categories (updates userId, except default categories)
+   *
+   * @param fromGuestUserId - Source guest user ID
+   * @param toAuthUserId - Target authenticated user ID
+   * @returns Migration result with counts
+   */
+  migrateGuestDataToUser(
+    fromGuestUserId: string,
+    toAuthUserId: string
+  ): Promise<{
+    success: boolean;
+    migratedCounts: {
+      transactions: number;
+      budgets: number;
+      goals: number;
+      accounts: number;
+      categories: number;
+    };
+    error?: string;
+  }>;
 }

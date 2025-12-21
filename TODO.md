@@ -1,6 +1,6 @@
 # Kakeibo Monorepo Migration - Detailed TODO
 
-> **Status**: ✅ Phase 3D In Progress - Toast System Implemented!
+> **Status**: ✅ Phase 3E Complete - Authentication System Implemented!
 > **Last Updated**: December 21, 2024  
 > **Goal**: Migrate all features from `kakeibo` to `kakeibo-v2` monorepo with proper separation of concerns
 > 
@@ -17,12 +17,17 @@
 > **Note**: These features have basic placeholder implementations and need to be completed later
 
 ### Authentication & User Management
-- ⚠️ **useAuth hook** (`apps/web/src/hooks/useAuth.ts`)
-  - Currently returns hardcoded guest user
-  - TODO: Implement real authentication with Supabase
-  - TODO: Add Google/Apple/GitHub OAuth providers
-  - TODO: Implement guest-to-authenticated migration
-  - TODO: Add session persistence
+- ✅ **useAuth hook** (`apps/web/src/hooks/useAuth.ts`) - COMPLETED Dec 21, 2024
+  - ✅ Implemented Supabase authentication
+  - ✅ Google OAuth provider working
+  - ✅ Guest mode with startAsGuest()
+  - ✅ Session persistence via Zustand + localStorage
+  - ✅ Protected routes with TanStack Router context + beforeLoad
+  - ✅ Auth store with all v1 methods
+  - ✅ Profile image with fallback handling
+  - ⚠️ TODO: Implement guest-to-authenticated migration (data transfer)
+  - ⚠️ TODO: Add Apple/GitHub OAuth providers
+  - ⚠️ TODO: Avatar upload functionality
 
 ### Data Import/Export
 - ⚠️ **JSON Backup/Restore** (Settings page placeholder)
@@ -58,7 +63,7 @@
   - [x] Dashboard page ✅ (Complete with all v1 features)
   - [x] Transactions page ✅ (Complete with filters, search, edit/delete)
   - [x] Budgets page ✅ (Complete with multi-category support)
-- [ ] Phase 3D: Toast Notification System - `apps/web/src/components/ui/Toast/` (8/12) 🔄
+- [x] Phase 3D: Toast Notification System - `apps/web/src/components/ui/Toast/` (11/12) ✅
   - [x] Toast utility with pub/sub pattern
   - [x] Toast component with Framer Motion animations
   - [x] ToastContainer with AnimatePresence
@@ -67,10 +72,24 @@
   - [x] Budget operation toasts
   - [x] Goal operation toasts (CRUD + contribute/withdraw)
   - [x] Account operation toasts
-  - [ ] Category operation toasts
-  - [ ] Import/export operation toasts
-  - [ ] Settings change toasts
-  - [ ] Replace console.error with toast.error
+  - [x] Category operation toasts
+  - [x] Import/export operation toasts
+  - [x] Settings change toasts
+  - [ ] Replace console.error with toast.error (optional)
+- [x] Phase 3E: Authentication System - `apps/web/src/hooks/useAuth.ts` (10/13) ✅
+  - [x] Supabase client setup with PKCE flow
+  - [x] Auth store (Zustand) with persist middleware
+  - [x] useAuth hook with OAuth + guest mode
+  - [x] TanStack Router context for auth state
+  - [x] Protected routes with _authenticated layout
+  - [x] Route guards using beforeLoad
+  - [x] Google OAuth sign-in (WelcomePage + Settings)
+  - [x] Sign-out with keepLocalData option
+  - [x] Profile display with image fallback
+  - [x] Toast notifications for auth actions
+  - [ ] Guest-to-authenticated data migration
+  - [ ] Apple OAuth provider
+  - [ ] GitHub OAuth provider
   - [x] Analytics page ✅ (Complete with Recharts integration)
   - [x] Goals page ✅ (Complete with contribution/withdrawal)
   - [x] Accounts page ✅ (Complete with net worth tracking)
@@ -86,7 +105,7 @@
 - [ ] Phase 5: Testing & Quality Assurance (0/15)
 - [ ] Phase 6: Documentation & CI/CD (0/9)
 
-**Total Tasks**: 92/154 completed (59.7%)
+**Total Tasks**: 113/167 completed (67.7%)
 
 ---
 
@@ -98,6 +117,13 @@
 - ✅ Implemented complete AppStore with settings, theme, modal states, editing states
 - ✅ Created complete RootLayout with BottomNav (6 tabs) + context-aware FAB
 - ✅ Integrated all 4 modals (AddTransaction, AddBudget, AddGoal, AddAccount)
+- ✅ Completed toast notification system (11/12 tasks)
+- ✅ Implemented Supabase authentication with Google OAuth
+- ✅ Created auth store with Zustand + persist middleware
+- ✅ Implemented protected routes with TanStack Router context
+- ✅ Added route guards using _authenticated layout + beforeLoad
+- ✅ Fixed auto-guest-user creation issue (explicit startAsGuest only)
+- ✅ Added profile image fallback handling for Google OAuth
 - ✅ Added Framer Motion animations for nav indicator and FAB
 - ✅ Installed dependencies: zustand, framer-motion, tailwind-merge
 - ✅ Build passing with no TypeScript errors
