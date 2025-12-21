@@ -1,7 +1,8 @@
 import { cn } from '@kakeibo/core';
-import * as Dialog from '@radix-ui/react-dialog';
+import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect, useId, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from '../Button';
 
 export interface ModalProps {
@@ -29,6 +30,36 @@ const Modal = ({
   closeOnEscape = true,
   footer,
 }: ModalProps) => {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  const descriptionId = useId();
+
+  // Handle escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && closeOnEscape) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [isOpen, closeOnEscape, onClose]);
+
+  // Focus trap
+  useEffect(() => {
+    if (isOpen && modalRef.current) {
+      modalRef.current.focus();
+    }
+  }, [isOpen]);
+
   const sizeClasses = {
     sm: 'max-w-sm',
     md: 'max-w-md',
@@ -37,67 +68,84 @@ const Modal = ({
     full: 'max-w-full mx-4',
   };
 
-  return (
-    <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <Dialog.Portal>
-        <Dialog.Overlay
-          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm data-[state=open]:animate-fade-in"
-          onClick={closeOnOverlayClick ? onClose : undefined}
-        />
-        <Dialog.Content
-          onEscapeKeyDown={closeOnEscape ? undefined : (e) => e.preventDefault()}
-          className={cn(
-            'fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%]',
-            'w-full bg-surface-900 rounded-xl squircle shadow-2xl shadow-black/50',
-            'max-h-[90vh] overflow-hidden flex flex-col',
-            'border border-surface-700',
-            'data-[state=open]:animate-fade-in',
-            sizeClasses[size]
-          )}
-        >
-          {/* Header */}
-          {(title || showCloseButton) && (
-            <div className="flex items-start justify-between p-4 sm:p-6 border-b border-surface-700">
-              <div>
-                {title && (
-                  <Dialog.Title className="text-lg font-semibold text-surface-100">
-                    {title}
-                  </Dialog.Title>
-                )}
-                {description && (
-                  <Dialog.Description className="mt-1 text-sm text-surface-400">
-                    {description}
-                  </Dialog.Description>
-                )}
-              </div>
-              {showCloseButton && (
-                <Dialog.Close asChild>
+  const modalContent = (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Overlay */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={closeOnOverlayClick ? onClose : undefined}
+          />
+
+          {/* Modal */}
+          <motion.div
+            ref={modalRef}
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ duration: 0.2 }}
+            className={cn(
+              'relative w-full bg-surface-900 rounded-xl squircle shadow-2xl shadow-black/50',
+              'max-h-[90vh] overflow-hidden flex flex-col',
+              'border border-surface-700',
+              sizeClasses[size]
+            )}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={title ? 'modal-title' : undefined}
+            aria-describedby={description ? 'modal-description' : undefined}
+            tabIndex={-1}
+          >
+            {/* Header */}
+            {(title || showCloseButton) && (
+              <div className="flex items-start justify-between p-4 sm:p-6 border-b border-surface-700">
+                <div>
+                  {title && (
+                    <h2 id={titleId} className="text-lg font-semibold text-surface-100">
+                      {title}
+                    </h2>
+                  )}
+                  {description && (
+                    <p id={descriptionId} className="mt-1 text-sm text-surface-400">
+                      {description}
+                    </p>
+                  )}
+                </div>
+                {showCloseButton && (
                   <Button
                     variant="ghost"
                     size="icon-sm"
+                    onClick={onClose}
                     className="ml-4 -mr-2 -mt-1"
                     aria-label="Close modal"
                   >
                     <X className="h-5 w-5" />
                   </Button>
-                </Dialog.Close>
-              )}
-            </div>
-          )}
+                )}
+              </div>
+            )}
 
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6">{children}</div>
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6">{children}</div>
 
-          {/* Footer */}
-          {footer && (
-            <div className="flex items-center justify-end gap-3 p-4 sm:p-6 border-t border-surface-700">
-              {footer}
-            </div>
-          )}
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+            {/* Footer */}
+            {footer && (
+              <div className="flex items-center justify-end gap-3 p-4 sm:p-6 border-t border-surface-700">
+                {footer}
+              </div>
+            )}
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
+
+  return createPortal(modalContent, document.body);
 };
 
 Modal.displayName = 'Modal';

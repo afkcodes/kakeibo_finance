@@ -104,6 +104,20 @@ export const dateFormats = {
 } as const;
 
 /**
+ * Date format options for UI select components
+ * Derived from unique values in dateFormats
+ *
+ * @example
+ * ```tsx
+ * <Select options={dateFormatOptions} />
+ * ```
+ */
+export const dateFormatOptions = Array.from(new Set(Object.values(dateFormats))).map((format) => ({
+  value: format,
+  label: format.toUpperCase(),
+}));
+
+/**
  * App version (should match package.json)
  */
 export const APP_VERSION = '1.0.0';

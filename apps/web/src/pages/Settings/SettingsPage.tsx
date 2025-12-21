@@ -1,3 +1,4 @@
+import { currencyOptions, dateFormatOptions } from '@kakeibo/core';
 import {
   AlertTriangle,
   Bell,
@@ -32,20 +33,6 @@ export const SettingsPage = () => {
     { value: 'light', label: 'Light', icon: Sun },
     { value: 'dark', label: 'Dark', icon: Moon },
     { value: 'system', label: 'System', icon: Monitor },
-  ];
-
-  const currencyOptions = [
-    { value: 'USD', label: 'USD ($)' },
-    { value: 'EUR', label: 'EUR (€)' },
-    { value: 'GBP', label: 'GBP (£)' },
-    { value: 'JPY', label: 'JPY (¥)' },
-    { value: 'INR', label: 'INR (₹)' },
-  ];
-
-  const dateFormatOptions = [
-    { value: 'MM/dd/yyyy', label: 'MM/DD/YYYY' },
-    { value: 'dd/MM/yyyy', label: 'DD/MM/YYYY' },
-    { value: 'yyyy-MM-dd', label: 'YYYY-MM-DD' },
   ];
 
   const formatDay = (d: string | number | undefined) => {

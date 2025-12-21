@@ -135,6 +135,7 @@ export const WelcomePage = () => {
 
           {/* Secondary CTA - Google Sign In */}
           <button
+            type="button"
             onClick={handleGoogleSignIn}
             disabled={isStarting || isSigningIn}
             className={`w-full h-14 rounded-2xl border border-surface-700 bg-surface-900/80 flex items-center justify-center gap-3 text-surface-100 text-[15px] font-medium transition-all duration-200 hover:bg-surface-800 hover:border-surface-600 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]`}

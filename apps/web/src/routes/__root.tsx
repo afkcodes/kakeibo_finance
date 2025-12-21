@@ -10,11 +10,12 @@ import {
   Target,
   Wallet,
 } from 'lucide-react';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { AddAccountModal } from '../components/features/accounts/AddAccountModal';
 import { AddBudgetModal } from '../components/features/budgets/AddBudgetModal';
 import { AddGoalModal } from '../components/features/goals/AddGoalModal';
 import { AddTransactionModal } from '../components/features/transactions/AddTransactionModal';
+import { ensureDatabaseInitialized } from '../services/db/initializeDatabase';
 import { useAppStore } from '../store';
 
 export const Route = createRootRoute({
@@ -31,8 +32,22 @@ const navigationItems = [
 ];
 
 function RootLayout() {
-  const { activeModal, setActiveModal, currentUserId } = useAppStore();
+  // Use selectors to avoid unnecessary re-renders when unrelated store state changes
+  const activeModal = useAppStore((state) => state.activeModal);
+  const setActiveModal = useAppStore((state) => state.setActiveModal);
+  const currentUserId = useAppStore((state) => state.currentUserId);
+  const editingTransaction = useAppStore((state) => state.editingTransaction);
   const location = useLocation();
+
+  // Initialize database with default categories on first load
+  // Empty dependency array ensures this only runs once on mount
+  useEffect(() => {
+    const userId = useAppStore.getState().currentUserId;
+    ensureDatabaseInitialized(userId).catch((error) => {
+      console.error('Failed to initialize database:', error);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   // Determine FAB config based on current route
   const fabConfig = useMemo(() => {
@@ -129,6 +144,7 @@ function RootLayout() {
         isOpen={activeModal === 'add-transaction'}
         onClose={() => setActiveModal(null)}
         userId={currentUserId}
+        editingTransaction={editingTransaction ?? undefined}
       />
       <AddBudgetModal
         isOpen={activeModal === 'add-budget'}

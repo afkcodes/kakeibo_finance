@@ -1,8 +1,8 @@
 pre-commit:
   parallel: true
   commands:
-    # lint:
-    #   run: yarn run lint
+    lint:
+      run: yarn run lint
     format:
       run: yarn run format
 commit-msg:
