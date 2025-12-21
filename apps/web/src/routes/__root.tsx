@@ -1,4 +1,4 @@
-import { createRootRoute, Link, Outlet, useLocation } from '@tanstack/react-router';
+import { createRootRouteWithContext, Link, Outlet, useLocation } from '@tanstack/react-router';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   ArrowRightLeft,
@@ -15,10 +15,15 @@ import { AddAccountModal } from '../components/features/accounts/AddAccountModal
 import { AddBudgetModal } from '../components/features/budgets/AddBudgetModal';
 import { AddGoalModal } from '../components/features/goals/AddGoalModal';
 import { AddTransactionModal } from '../components/features/transactions/AddTransactionModal';
+import type { UseAuthReturn } from '../hooks/useAuth';
 import { ensureDatabaseInitialized } from '../services/db/initializeDatabase';
 import { useAppStore } from '../store';
 
-export const Route = createRootRoute({
+export interface MyRouterContext {
+  auth: UseAuthReturn;
+}
+
+export const Route = createRootRouteWithContext<MyRouterContext>()({
   component: RootLayout,
 });
 
@@ -32,12 +37,13 @@ const navigationItems = [
 ];
 
 function RootLayout() {
+  const location = useLocation();
+
   // Use selectors to avoid unnecessary re-renders when unrelated store state changes
   const activeModal = useAppStore((state) => state.activeModal);
   const setActiveModal = useAppStore((state) => state.setActiveModal);
   const currentUserId = useAppStore((state) => state.currentUserId);
   const editingTransaction = useAppStore((state) => state.editingTransaction);
-  const location = useLocation();
 
   // Initialize database with default categories on first load
   // Empty dependency array ensures this only runs once on mount
@@ -45,6 +51,7 @@ function RootLayout() {
     const userId = useAppStore.getState().currentUserId;
     ensureDatabaseInitialized(userId).catch((error) => {
       console.error('Failed to initialize database:', error);
+      // Note: Don't show toast here as it happens on app load before ToastRoot is mounted
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount

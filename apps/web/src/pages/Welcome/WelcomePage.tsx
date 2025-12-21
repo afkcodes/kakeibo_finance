@@ -15,7 +15,7 @@ import { useAuth } from '../../hooks/useAuth';
  */
 export const WelcomePage = () => {
   const navigate = useNavigate();
-  const { signIn, isLoading: authLoading } = useAuth();
+  const { signIn, startAsGuest, isLoading: authLoading } = useAuth();
   const [isStarting, setIsStarting] = useState(false);
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -26,6 +26,9 @@ export const WelcomePage = () => {
   const handleStartTracking = () => {
     setIsStarting(true);
     setError(null);
+
+    // Initialize guest user
+    startAsGuest();
 
     // Mark that user has seen welcome page
     localStorage.setItem('hasSeenWelcome', 'true');

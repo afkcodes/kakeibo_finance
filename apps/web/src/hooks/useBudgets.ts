@@ -7,6 +7,7 @@ import type { Budget, CreateBudgetInput, UpdateBudgetInput } from '@kakeibo/core
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../services/db';
 import { adapter } from '../services/db/adapter';
+import { toastHelpers } from '../utils';
 
 export interface BudgetProgress {
   budget: Budget;
@@ -70,15 +71,44 @@ export const useBudget = (budgetId: string) => {
 export const useBudgetActions = () => {
   return {
     addBudget: async (userId: string, input: CreateBudgetInput) => {
-      return adapter.createBudget(userId, input);
+      try {
+        const budget = await adapter.createBudget(userId, input);
+        toastHelpers.success('Budget created', `Budget for ${input.amount} created successfully`);
+        return budget;
+      } catch (error) {
+        toastHelpers.error(
+          'Failed to create budget',
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+        throw error;
+      }
     },
 
     updateBudget: async (budgetId: string, updates: UpdateBudgetInput) => {
-      return adapter.updateBudget(budgetId, updates);
+      try {
+        const budget = await adapter.updateBudget(budgetId, updates);
+        toastHelpers.success('Budget updated', 'Changes saved successfully');
+        return budget;
+      } catch (error) {
+        toastHelpers.error(
+          'Failed to update budget',
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+        throw error;
+      }
     },
 
     deleteBudget: async (budgetId: string) => {
-      return adapter.deleteBudget(budgetId);
+      try {
+        await adapter.deleteBudget(budgetId);
+        toastHelpers.success('Budget deleted', 'Budget removed successfully');
+      } catch (error) {
+        toastHelpers.error(
+          'Failed to delete budget',
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+        throw error;
+      }
     },
   };
 };

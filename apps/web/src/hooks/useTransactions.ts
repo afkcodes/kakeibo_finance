@@ -13,6 +13,7 @@ import type {
 } from '@kakeibo/core';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { adapter } from '../services/db/adapter';
+import { toastHelpers } from '../utils';
 
 /**
  * Get all transactions for a user with optional filters
@@ -51,15 +52,47 @@ export const useTransaction = (transactionId: string) => {
 export const useTransactionActions = () => {
   return {
     addTransaction: async (userId: string, input: CreateTransactionInput) => {
-      return adapter.createTransaction(userId, input);
+      try {
+        const transaction = await adapter.createTransaction(userId, input);
+        toastHelpers.success(
+          'Transaction added',
+          `${input.type} of ${input.amount} saved successfully`
+        );
+        return transaction;
+      } catch (error) {
+        toastHelpers.error(
+          'Failed to add transaction',
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+        throw error;
+      }
     },
 
     updateTransaction: async (transactionId: string, updates: UpdateTransactionInput) => {
-      return adapter.updateTransaction(transactionId, updates);
+      try {
+        const transaction = await adapter.updateTransaction(transactionId, updates);
+        toastHelpers.success('Transaction updated', 'Changes saved successfully');
+        return transaction;
+      } catch (error) {
+        toastHelpers.error(
+          'Failed to update transaction',
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+        throw error;
+      }
     },
 
     deleteTransaction: async (transactionId: string) => {
-      return adapter.deleteTransaction(transactionId);
+      try {
+        await adapter.deleteTransaction(transactionId);
+        toastHelpers.success('Transaction deleted', 'Transaction removed successfully');
+      } catch (error) {
+        toastHelpers.error(
+          'Failed to delete transaction',
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+        throw error;
+      }
     },
   };
 };
