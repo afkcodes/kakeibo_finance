@@ -165,7 +165,7 @@ export const SettingsPage = () => {
                       setIsSigningIn(true);
                       await signIn({
                         provider: 'google',
-                        redirectTo: window.location.origin + '/settings',
+                        redirectTo: `${window.location.origin}/settings`,
                       });
                     } catch (error) {
                       toastHelpers.error(
@@ -226,6 +226,7 @@ export const SettingsPage = () => {
 
                 return (
                   <button
+                    type="button"
                     key={option.value}
                     onClick={() => {
                       setTheme(option.value as 'light' | 'dark' | 'system');
@@ -287,6 +288,7 @@ export const SettingsPage = () => {
                   const isSelected = settings.dateFormat === option.value;
                   return (
                     <button
+                      type="button"
                       key={option.value}
                       onClick={() => {
                         updateSettings({ dateFormat: option.value });
@@ -309,6 +311,7 @@ export const SettingsPage = () => {
 
           {/* Financial Month Start */}
           <button
+            type="button"
             onClick={() => setShowMonthPicker(true)}
             className="w-full text-left px-5 py-4 border-t border-surface-700/50 bg-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
@@ -408,6 +411,7 @@ export const SettingsPage = () => {
           </div>
           <div className="divide-y divide-surface-700/50">
             <button
+              type="button"
               onClick={handleExportData}
               className="w-full flex items-center justify-between px-5 py-4 hover:bg-surface-700/30 transition-colors"
             >
@@ -422,6 +426,7 @@ export const SettingsPage = () => {
             </button>
 
             <button
+              type="button"
               onClick={handleImportData}
               className="w-full flex items-center justify-between px-5 py-4 hover:bg-surface-700/30 transition-colors"
             >
@@ -438,6 +443,7 @@ export const SettingsPage = () => {
             </button>
 
             <button
+              type="button"
               onClick={() => setShowDeleteModal(true)}
               className="w-full flex items-center justify-between px-5 py-4 hover:bg-danger-500/10 transition-colors"
             >
@@ -475,6 +481,7 @@ export const SettingsPage = () => {
               const isSelected = settings.financialMonthStart === day;
               return (
                 <button
+                  type="button"
                   key={day}
                   onClick={() => {
                     updateSettings({ financialMonthStart: day });

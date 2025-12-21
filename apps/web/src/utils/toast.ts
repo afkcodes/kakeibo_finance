@@ -32,7 +32,9 @@ export const toast = (payload: ToastPayload): void => {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
   };
 
-  listeners.forEach((listener) => listener(toastWithId));
+  for (const listener of listeners) {
+    listener(toastWithId);
+  }
 };
 
 /**

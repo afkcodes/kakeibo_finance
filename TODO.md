@@ -25,7 +25,7 @@
   - ✅ Protected routes with TanStack Router context + beforeLoad
   - ✅ Auth store with all v1 methods
   - ✅ Profile image with fallback handling
-  - ⚠️ TODO: Implement guest-to-authenticated migration (data transfer)
+  - ✅ Guest-to-authenticated migration (data transfer) - COMPLETED Dec 22, 2024
   - ⚠️ TODO: Add Apple/GitHub OAuth providers
   - ⚠️ TODO: Avatar upload functionality
 
@@ -76,7 +76,7 @@
   - [x] Import/export operation toasts
   - [x] Settings change toasts
   - [ ] Replace console.error with toast.error (optional)
-- [x] Phase 3E: Authentication System - `apps/web/src/hooks/useAuth.ts` (10/13) ✅
+- [x] Phase 3E: Authentication System - `apps/web/src/hooks/useAuth.ts` (11/13) ✅
   - [x] Supabase client setup with PKCE flow
   - [x] Auth store (Zustand) with persist middleware
   - [x] useAuth hook with OAuth + guest mode
@@ -87,7 +87,7 @@
   - [x] Sign-out with keepLocalData option
   - [x] Profile display with image fallback
   - [x] Toast notifications for auth actions
-  - [ ] Guest-to-authenticated data migration
+  - [x] Guest-to-authenticated data migration
   - [ ] Apple OAuth provider
   - [ ] GitHub OAuth provider
   - [x] Analytics page ✅ (Complete with Recharts integration)
@@ -105,7 +105,7 @@
 - [ ] Phase 5: Testing & Quality Assurance (0/15)
 - [ ] Phase 6: Documentation & CI/CD (0/9)
 
-**Total Tasks**: 113/167 completed (67.7%)
+**Total Tasks**: 114/167 completed (68.3%)
 
 ---
 
@@ -124,6 +124,9 @@
 - ✅ Added route guards using _authenticated layout + beforeLoad
 - ✅ Fixed auto-guest-user creation issue (explicit startAsGuest only)
 - ✅ Added profile image fallback handling for Google OAuth
+- ✅ Implemented guest-to-authenticated data migration (Dec 22, 2024)
+- ✅ Auto-migrate on OAuth sign-in with toast notifications
+- ✅ Navigate to dashboard after successful sign-in
 - ✅ Added Framer Motion animations for nav indicator and FAB
 - ✅ Installed dependencies: zustand, framer-motion, tailwind-merge
 - ✅ Build passing with no TypeScript errors

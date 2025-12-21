@@ -1,8 +1,8 @@
-import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
+import { createFileRoute, Outlet, type ParsedLocation, redirect } from '@tanstack/react-router';
 import type { MyRouterContext } from './__root';
 
 export const Route = createFileRoute('/_authenticated')({
-  beforeLoad: ({ context, location }: { context: MyRouterContext; location: any }) => {
+  beforeLoad: ({ context, location }: { context: MyRouterContext; location: ParsedLocation }) => {
     console.log('[_authenticated] beforeLoad - user:', context.auth.user);
     console.log('[_authenticated] beforeLoad - isLoading:', context.auth.isLoading);
 

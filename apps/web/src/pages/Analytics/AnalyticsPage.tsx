@@ -371,172 +371,166 @@ export const AnalyticsPage = () => {
         </div>
 
         {/* Main Category View */}
-        {!selectedCategoryId && (
-          <>
-            {categoryData.length === 0 ? (
-              <div className="h-32 flex items-center justify-center text-surface-400 text-sm">
-                No expense data this month
-              </div>
-            ) : (
-              <div className="flex flex-col items-center gap-4">
-                <div
-                  className="w-36 h-36 select-none"
-                  style={{ WebkitTapHighlightColor: 'transparent' }}
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart style={{ outline: 'none' }}>
-                      <Pie
-                        data={categoryData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={40}
-                        outerRadius={60}
-                        paddingAngle={3}
-                        dataKey="value"
-                        stroke="none"
-                        isAnimationActive={false}
-                        onClick={(data) => setSelectedCategoryId(data.id)}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        {categoryData.map((entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={entry.color}
-                            style={{ outline: 'none' }}
-                          />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        cursor={false}
-                        content={({ active, payload }) => {
-                          if (active && payload && payload.length) {
-                            const data = payload[0].payload;
-                            return (
-                              <div className="bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 shadow-lg">
-                                <p className="text-xs text-surface-400">{data.name}</p>
-                                <p className="text-sm font-semibold text-surface-50">
-                                  {formatCurrency(data.value)}
-                                </p>
-                                <p className="text-[10px] text-surface-500 mt-1">
-                                  Tap to see breakdown
-                                </p>
-                              </div>
-                            );
-                          }
-                          return null;
-                        }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="w-full space-y-2">
-                  {categoryData.slice(0, 5).map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => setSelectedCategoryId(item.id)}
-                      className="w-full flex items-center justify-between py-1.5 px-1 -mx-1 rounded-lg hover:bg-surface-700/30 transition-colors"
+        {!selectedCategoryId &&
+          (categoryData.length === 0 ? (
+            <div className="h-32 flex items-center justify-center text-surface-400 text-sm">
+              No expense data this month
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-4">
+              <div
+                className="w-36 h-36 select-none"
+                style={{ WebkitTapHighlightColor: 'transparent' }}
+              >
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart style={{ outline: 'none' }}>
+                    <Pie
+                      data={categoryData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={40}
+                      outerRadius={60}
+                      paddingAngle={3}
+                      dataKey="value"
+                      stroke="none"
+                      isAnimationActive={false}
+                      onClick={(data) => setSelectedCategoryId(data.id)}
+                      style={{ cursor: 'pointer' }}
                     >
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-2.5 h-2.5 rounded-full shrink-0"
-                          style={{ backgroundColor: item.color }}
+                      {categoryData.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={entry.color}
+                          style={{ outline: 'none' }}
                         />
-                        <span className="text-[13px] text-surface-300">{item.name}</span>
-                      </div>
-                      <span className="text-[13px] font-medium text-surface-50">
-                        {formatCurrency(item.value)}
-                      </span>
-                    </button>
-                  ))}
-                </div>
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      cursor={false}
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          const data = payload[0].payload;
+                          return (
+                            <div className="bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 shadow-lg">
+                              <p className="text-xs text-surface-400">{data.name}</p>
+                              <p className="text-sm font-semibold text-surface-50">
+                                {formatCurrency(data.value)}
+                              </p>
+                              <p className="text-[10px] text-surface-500 mt-1">
+                                Tap to see breakdown
+                              </p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
-            )}
-          </>
-        )}
+              <div className="w-full space-y-2">
+                {categoryData.slice(0, 5).map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setSelectedCategoryId(item.id)}
+                    className="w-full flex items-center justify-between py-1.5 px-1 -mx-1 rounded-lg hover:bg-surface-700/30 transition-colors"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-2.5 h-2.5 rounded-full shrink-0"
+                        style={{ backgroundColor: item.color }}
+                      />
+                      <span className="text-[13px] text-surface-300">{item.name}</span>
+                    </div>
+                    <span className="text-[13px] font-medium text-surface-50">
+                      {formatCurrency(item.value)}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
 
         {/* Subcategory Drill-down View */}
-        {selectedCategoryId && (
-          <>
-            {subcategoryData.length === 0 ? (
-              <div className="h-32 flex items-center justify-center text-surface-400 text-sm">
-                No transactions in this category
-              </div>
-            ) : (
-              <div className="flex flex-col items-center gap-4">
-                <div
-                  className="w-36 h-36 select-none"
-                  style={{ WebkitTapHighlightColor: 'transparent' }}
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart style={{ outline: 'none' }}>
-                      <Pie
-                        data={subcategoryData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={40}
-                        outerRadius={60}
-                        paddingAngle={3}
-                        dataKey="value"
-                        stroke="none"
-                        isAnimationActive={false}
-                      >
-                        {subcategoryData.map((entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={entry.color}
-                            style={{ outline: 'none' }}
-                          />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        cursor={false}
-                        content={({ active, payload }) => {
-                          if (active && payload && payload.length) {
-                            const data = payload[0].payload;
-                            return (
-                              <div className="bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 shadow-lg">
-                                <p className="text-xs text-surface-400">{data.name}</p>
-                                <p className="text-sm font-semibold text-surface-50">
-                                  {formatCurrency(data.value)}
-                                </p>
-                              </div>
-                            );
-                          }
-                          return null;
-                        }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="w-full space-y-2">
-                  {subcategoryData.map((item) => (
-                    <div key={item.name} className="flex items-center justify-between py-1">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-2.5 h-2.5 rounded-full shrink-0"
-                          style={{ backgroundColor: item.color }}
+        {selectedCategoryId &&
+          (subcategoryData.length === 0 ? (
+            <div className="h-32 flex items-center justify-center text-surface-400 text-sm">
+              No transactions in this category
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-4">
+              <div
+                className="w-36 h-36 select-none"
+                style={{ WebkitTapHighlightColor: 'transparent' }}
+              >
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart style={{ outline: 'none' }}>
+                    <Pie
+                      data={subcategoryData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={40}
+                      outerRadius={60}
+                      paddingAngle={3}
+                      dataKey="value"
+                      stroke="none"
+                      isAnimationActive={false}
+                    >
+                      {subcategoryData.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={entry.color}
+                          style={{ outline: 'none' }}
                         />
-                        <span className="text-[13px] text-surface-300">{item.name}</span>
-                      </div>
-                      <span className="text-[13px] font-medium text-surface-50">
-                        {formatCurrency(item.value)}
-                      </span>
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      cursor={false}
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          const data = payload[0].payload;
+                          return (
+                            <div className="bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 shadow-lg">
+                              <p className="text-xs text-surface-400">{data.name}</p>
+                              <p className="text-sm font-semibold text-surface-50">
+                                {formatCurrency(data.value)}
+                              </p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="w-full space-y-2">
+                {subcategoryData.map((item) => (
+                  <div key={item.name} className="flex items-center justify-between py-1">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-2.5 h-2.5 rounded-full shrink-0"
+                        style={{ backgroundColor: item.color }}
+                      />
+                      <span className="text-[13px] text-surface-300">{item.name}</span>
                     </div>
-                  ))}
-                </div>
-                {/* Total for this category */}
-                <div className="w-full pt-2 border-t border-surface-700/50">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[13px] text-surface-400">Total</span>
-                    <span className="text-[14px] font-semibold text-surface-50">
-                      {formatCurrency(subcategoryData.reduce((sum, item) => sum + item.value, 0))}
+                    <span className="text-[13px] font-medium text-surface-50">
+                      {formatCurrency(item.value)}
                     </span>
                   </div>
+                ))}
+              </div>
+              {/* Total for this category */}
+              <div className="w-full pt-2 border-t border-surface-700/50">
+                <div className="flex items-center justify-between">
+                  <span className="text-[13px] text-surface-400">Total</span>
+                  <span className="text-[14px] font-semibold text-surface-50">
+                    {formatCurrency(subcategoryData.reduce((sum, item) => sum + item.value, 0))}
+                  </span>
                 </div>
               </div>
-            )}
-          </>
-        )}
+            </div>
+          ))}
       </div>
 
       {/* Monthly Comparison */}

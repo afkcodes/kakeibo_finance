@@ -4,10 +4,10 @@
  */
 
 import { motion } from 'framer-motion';
-import { AlertCircle, CheckCircle, Info } from 'lucide-react';
+import { AlertCircle, CheckCircle, Info, type LucideIcon } from 'lucide-react';
 import type { Toast } from '../../../utils/toast';
 
-const variantStyles: Record<string, { icon: any; accent: string }> = {
+const variantStyles: Record<string, { icon: LucideIcon; accent: string }> = {
   success: { icon: CheckCircle, accent: 'bg-success-500' },
   error: { icon: AlertCircle, accent: 'bg-danger-500' },
   warning: { icon: AlertCircle, accent: 'bg-warning-500' },
