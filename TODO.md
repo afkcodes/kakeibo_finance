@@ -1,6 +1,6 @@
 # Kakeibo Monorepo Migration - Detailed TODO
 
-> **Status**: ✅ Phase 3C Complete - All 7 Web Pages Implemented!
+> **Status**: ✅ Phase 3D In Progress - Toast System Implemented!
 > **Last Updated**: December 21, 2024  
 > **Goal**: Migrate all features from `kakeibo` to `kakeibo-v2` monorepo with proper separation of concerns
 > 
@@ -58,6 +58,19 @@
   - [x] Dashboard page ✅ (Complete with all v1 features)
   - [x] Transactions page ✅ (Complete with filters, search, edit/delete)
   - [x] Budgets page ✅ (Complete with multi-category support)
+- [ ] Phase 3D: Toast Notification System - `apps/web/src/components/ui/Toast/` (8/12) 🔄
+  - [x] Toast utility with pub/sub pattern
+  - [x] Toast component with Framer Motion animations
+  - [x] ToastContainer with AnimatePresence
+  - [x] ToastRoot with React Portal
+  - [x] Transaction operation toasts (create/update/delete)
+  - [x] Budget operation toasts
+  - [x] Goal operation toasts (CRUD + contribute/withdraw)
+  - [x] Account operation toasts
+  - [ ] Category operation toasts
+  - [ ] Import/export operation toasts
+  - [ ] Settings change toasts
+  - [ ] Replace console.error with toast.error
   - [x] Analytics page ✅ (Complete with Recharts integration)
   - [x] Goals page ✅ (Complete with contribution/withdrawal)
   - [x] Accounts page ✅ (Complete with net worth tracking)

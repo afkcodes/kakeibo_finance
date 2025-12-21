@@ -163,6 +163,7 @@ export const AddTransactionModal = ({
       }
       handleClose();
     } catch (error) {
+      // Error toast is already shown in useTransactionActions hook
       console.error('Failed to save transaction:', error);
     } finally {
       setIsSubmitting(false);

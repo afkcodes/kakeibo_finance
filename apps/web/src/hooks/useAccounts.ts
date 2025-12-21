@@ -6,6 +6,7 @@
 import type { CreateAccountInput, UpdateAccountInput } from '@kakeibo/core';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { adapter } from '../services/db/adapter';
+import { toastHelpers } from '../utils';
 
 export const useAccounts = (userId: string, includeArchived = false) => {
   return useLiveQuery(
@@ -36,15 +37,44 @@ export const useAccount = (accountId: string) => {
 export const useAccountActions = () => {
   return {
     addAccount: async (userId: string, input: CreateAccountInput) => {
-      return adapter.createAccount(userId, input);
+      try {
+        const account = await adapter.createAccount(userId, input);
+        toastHelpers.success('Account created', `${input.name} added successfully`);
+        return account;
+      } catch (error) {
+        toastHelpers.error(
+          'Failed to create account',
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+        throw error;
+      }
     },
 
     updateAccount: async (accountId: string, updates: UpdateAccountInput) => {
-      return adapter.updateAccount(accountId, updates);
+      try {
+        const account = await adapter.updateAccount(accountId, updates);
+        toastHelpers.success('Account updated', 'Changes saved successfully');
+        return account;
+      } catch (error) {
+        toastHelpers.error(
+          'Failed to update account',
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+        throw error;
+      }
     },
 
     deleteAccount: async (accountId: string) => {
-      return adapter.deleteAccount(accountId);
+      try {
+        await adapter.deleteAccount(accountId);
+        toastHelpers.success('Account deleted', 'Account removed successfully');
+      } catch (error) {
+        toastHelpers.error(
+          'Failed to delete account',
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+        throw error;
+      }
     },
   };
 };

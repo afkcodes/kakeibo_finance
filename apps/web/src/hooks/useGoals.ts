@@ -6,6 +6,7 @@
 import type { CreateGoalInput, Goal, UpdateGoalInput } from '@kakeibo/core';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { adapter } from '../services/db/adapter';
+import { toastHelpers } from '../utils';
 
 export interface GoalProgress {
   goal: Goal;
@@ -44,19 +45,58 @@ export const useGoal = (goalId: string) => {
 export const useGoalActions = () => {
   return {
     addGoal: async (userId: string, input: CreateGoalInput) => {
-      return adapter.createGoal(userId, input);
+      try {
+        const goal = await adapter.createGoal(userId, input);
+        toastHelpers.success('Goal created', `${input.name} created successfully`);
+        return goal;
+      } catch (error) {
+        toastHelpers.error(
+          'Failed to create goal',
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+        throw error;
+      }
     },
 
     updateGoal: async (goalId: string, updates: UpdateGoalInput) => {
-      return adapter.updateGoal(goalId, updates);
+      try {
+        const goal = await adapter.updateGoal(goalId, updates);
+        toastHelpers.success('Goal updated', 'Changes saved successfully');
+        return goal;
+      } catch (error) {
+        toastHelpers.error(
+          'Failed to update goal',
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+        throw error;
+      }
     },
 
     deleteGoal: async (goalId: string) => {
-      return adapter.deleteGoal(goalId);
+      try {
+        await adapter.deleteGoal(goalId);
+        toastHelpers.success('Goal deleted', 'Goal removed successfully');
+      } catch (error) {
+        toastHelpers.error(
+          'Failed to delete goal',
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+        throw error;
+      }
     },
 
     updateGoalAmount: async (goalId: string, amount: number) => {
-      return adapter.updateGoalAmount(goalId, amount);
+      try {
+        const goal = await adapter.updateGoalAmount(goalId, amount);
+        toastHelpers.success('Goal amount updated', 'Target amount changed successfully');
+        return goal;
+      } catch (error) {
+        toastHelpers.error(
+          'Failed to update amount',
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+        throw error;
+      }
     },
 
     contributeToGoal: async (
@@ -65,7 +105,17 @@ export const useGoalActions = () => {
       accountId: string,
       description?: string
     ) => {
-      return adapter.contributeToGoal(goalId, amount, accountId, description);
+      try {
+        const result = await adapter.contributeToGoal(goalId, amount, accountId, description);
+        toastHelpers.success('Contribution added', `Contributed ${amount} to goal`);
+        return result;
+      } catch (error) {
+        toastHelpers.error(
+          'Failed to contribute',
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+        throw error;
+      }
     },
 
     withdrawFromGoal: async (
@@ -74,7 +124,17 @@ export const useGoalActions = () => {
       accountId: string,
       description?: string
     ) => {
-      return adapter.withdrawFromGoal(goalId, amount, accountId, description);
+      try {
+        const result = await adapter.withdrawFromGoal(goalId, amount, accountId, description);
+        toastHelpers.success('Withdrawal recorded', `Withdrew ${amount} from goal`);
+        return result;
+      } catch (error) {
+        toastHelpers.error(
+          'Failed to withdraw',
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+        throw error;
+      }
     },
   };
 };

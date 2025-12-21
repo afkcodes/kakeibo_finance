@@ -175,6 +175,7 @@ export const AccountsPage = () => {
       });
       handleCloseEditModal();
     } catch (error) {
+      // Error toast is already shown in useAccountActions hook
       console.error('Failed to update account:', error);
     } finally {
       setIsUpdating(false);
@@ -198,6 +199,7 @@ export const AccountsPage = () => {
       await deleteAccount(deletingAccount.id);
       handleCloseDeleteModal();
     } catch (error) {
+      // Error toast is already shown in useAccountActions hook
       console.error('Failed to delete account:', error);
     } finally {
       setIsDeleting(false);

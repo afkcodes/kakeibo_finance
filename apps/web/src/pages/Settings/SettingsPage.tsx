@@ -22,12 +22,15 @@ import { useState } from 'react';
 import { Button, Modal, Select } from '../../components/ui';
 import { useAuth } from '../../hooks';
 import { useAppStore } from '../../store/appStore';
+import { toastHelpers } from '../../utils';
 
 export const SettingsPage = () => {
   const { theme, setTheme, settings, updateSettings } = useAppStore();
-  const { user, isAuthenticated, isGuest } = useAuth();
+  const { user, isAuthenticated, isGuest, signIn, signOut } = useAuth();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showMonthPicker, setShowMonthPicker] = useState(false);
+  const [isSigningIn, setIsSigningIn] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   const themeOptions = [
     { value: 'light', label: 'Light', icon: Sun },
@@ -48,19 +51,46 @@ export const SettingsPage = () => {
   };
 
   const handleDeleteAllData = async () => {
-    // TODO: Implement clear database functionality
-    console.log('Delete all data - not implemented');
-    setShowDeleteModal(false);
+    try {
+      // TODO: Implement clear database functionality
+      console.log('Delete all data - not implemented');
+      setShowDeleteModal(false);
+      toastHelpers.warning(
+        'Feature coming soon',
+        'Delete all data functionality will be implemented'
+      );
+    } catch (error) {
+      toastHelpers.error(
+        'Failed to delete data',
+        error instanceof Error ? error.message : 'Unknown error'
+      );
+    }
   };
 
   const handleExportData = () => {
-    // TODO: Implement export functionality
-    console.log('Export data - not implemented');
+    try {
+      // TODO: Implement export functionality
+      console.log('Export data - not implemented');
+      toastHelpers.warning('Feature coming soon', 'Export data functionality will be implemented');
+    } catch (error) {
+      toastHelpers.error(
+        'Failed to export data',
+        error instanceof Error ? error.message : 'Unknown error'
+      );
+    }
   };
 
   const handleImportData = () => {
-    // TODO: Implement import functionality
-    console.log('Import data - not implemented');
+    try {
+      // TODO: Implement import functionality
+      console.log('Import data - not implemented');
+      toastHelpers.warning('Feature coming soon', 'Import data functionality will be implemented');
+    } catch (error) {
+      toastHelpers.error(
+        'Failed to import data',
+        error instanceof Error ? error.message : 'Unknown error'
+      );
+    }
   };
 
   return (
@@ -86,6 +116,16 @@ export const SettingsPage = () => {
                     src={user.photoURL}
                     alt={user?.displayName || 'User'}
                     className="w-full h-full rounded-xl object-cover"
+                    onError={(e) => {
+                      // Hide broken image and show fallback User icon
+                      e.currentTarget.style.display = 'none';
+                      const parent = e.currentTarget.parentElement;
+                      if (parent) {
+                        const icon = document.createElement('div');
+                        icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="${isAuthenticated ? '#818cf8' : '#9ca3af'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+                        parent.appendChild(icon);
+                      }
+                    }}
                   />
                 ) : (
                   <User
@@ -119,19 +159,48 @@ export const SettingsPage = () => {
                 <Button
                   variant="primary"
                   className="w-full"
-                  onClick={() => console.log('Sign in - placeholder')}
+                  disabled={isSigningIn}
+                  onClick={async () => {
+                    try {
+                      setIsSigningIn(true);
+                      await signIn({
+                        provider: 'google',
+                        redirectTo: window.location.origin + '/settings',
+                      });
+                    } catch (error) {
+                      toastHelpers.error(
+                        'Sign in failed',
+                        error instanceof Error ? error.message : 'Failed to sign in'
+                      );
+                      setIsSigningIn(false);
+                    }
+                  }}
                 >
                   <LogIn className="w-4 h-4 mr-2" />
-                  Sign In with Google
+                  {isSigningIn ? 'Signing in...' : 'Sign In with Google'}
                 </Button>
               ) : (
                 <Button
                   variant="secondary"
                   className="w-full"
-                  onClick={() => console.log('Sign out - placeholder')}
+                  disabled={isSigningOut}
+                  onClick={async () => {
+                    try {
+                      setIsSigningOut(true);
+                      await signOut({ keepLocalData: true });
+                      toastHelpers.success('Signed out', 'You have been signed out');
+                    } catch (error) {
+                      toastHelpers.error(
+                        'Sign out failed',
+                        error instanceof Error ? error.message : 'Failed to sign out'
+                      );
+                    } finally {
+                      setIsSigningOut(false);
+                    }
+                  }}
                 >
                   <LogOut className="w-4 h-4 mr-2" />
-                  Sign Out
+                  {isSigningOut ? 'Signing out...' : 'Sign Out'}
                 </Button>
               )}
             </div>
@@ -158,7 +227,10 @@ export const SettingsPage = () => {
                 return (
                   <button
                     key={option.value}
-                    onClick={() => setTheme(option.value as 'light' | 'dark' | 'system')}
+                    onClick={() => {
+                      setTheme(option.value as 'light' | 'dark' | 'system');
+                      toastHelpers.success('Theme updated', `Changed to ${option.label} mode`);
+                    }}
                     className={`p-4 rounded-xl border-2 transition-all duration-200 ${
                       isSelected
                         ? 'border-primary-500 bg-primary-500/10'
@@ -197,7 +269,12 @@ export const SettingsPage = () => {
             <Select
               options={currencyOptions}
               value={settings.currency}
-              onValueChange={(value) => updateSettings({ currency: value })}
+              onValueChange={(value) => {
+                updateSettings({ currency: value });
+                const currencyLabel =
+                  currencyOptions.find((opt) => opt.value === value)?.label || value;
+                toastHelpers.success('Currency updated', `Changed to ${currencyLabel}`);
+              }}
             />
           </div>
 
@@ -211,7 +288,10 @@ export const SettingsPage = () => {
                   return (
                     <button
                       key={option.value}
-                      onClick={() => updateSettings({ dateFormat: option.value })}
+                      onClick={() => {
+                        updateSettings({ dateFormat: option.value });
+                        toastHelpers.success('Date format updated', `Changed to ${option.label}`);
+                      }}
                       className={`py-2 px-3 rounded-md text-sm font-medium transition-all duration-150 ${
                         isSelected
                           ? 'bg-primary-500 text-white shadow-sm'
@@ -293,14 +373,20 @@ export const SettingsPage = () => {
                     checked={
                       settings.notifications[item.key as keyof typeof settings.notifications]
                     }
-                    onChange={(e) =>
+                    onChange={(e) => {
                       updateSettings({
                         notifications: {
                           ...settings.notifications,
                           [item.key]: e.target.checked,
                         },
-                      })
-                    }
+                      });
+                      toastHelpers.success(
+                        `${item.label} ${e.target.checked ? 'enabled' : 'disabled'}`,
+                        e.target.checked
+                          ? 'You will receive notifications'
+                          : 'Notifications turned off'
+                      );
+                    }}
                     className="sr-only peer"
                   />
                   <div className="w-11 h-6 bg-surface-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-surface-400 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500 peer-checked:after:bg-white" />
@@ -393,6 +479,10 @@ export const SettingsPage = () => {
                   onClick={() => {
                     updateSettings({ financialMonthStart: day });
                     setShowMonthPicker(false);
+                    toastHelpers.success(
+                      'Financial month updated',
+                      `Month starts on ${formatDay(day)}`
+                    );
                   }}
                   className={`py-2 px-2 rounded-md text-sm font-medium ${
                     isSelected
