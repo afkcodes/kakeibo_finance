@@ -189,7 +189,7 @@ export const useAuthStore = create<AuthStore>()(
        * Custom merge function
        * Handles rehydration from localStorage
        */
-      merge: (persisted: any, current: AuthStore) => ({
+      merge: (persisted: Partial<AuthStore>, current: AuthStore) => ({
         ...current,
         ...persisted,
         // Always start fresh with these values

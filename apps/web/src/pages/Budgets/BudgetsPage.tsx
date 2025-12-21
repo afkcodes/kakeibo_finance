@@ -13,8 +13,8 @@ const getBudgetCategories = (budget: Budget, categoryMap: Record<string, Categor
   if (Array.isArray(budget.categoryIds) && budget.categoryIds.length > 0) {
     categoryIds = budget.categoryIds;
   } else {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const oldCategoryId = (budget as any).categoryId as string | undefined;
+    // Handle old budget format (single category)
+    const oldCategoryId = (budget as Budget & { categoryId?: string }).categoryId;
     if (oldCategoryId) {
       categoryIds = [oldCategoryId];
     }
@@ -215,6 +215,7 @@ export const BudgetsPage = () => {
             Create budgets to track spending by category
           </p>
           <button
+            type="button"
             onClick={() => setActiveModal('add-budget')}
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-500 hover:bg-primary-600 text-white text-[14px] font-semibold rounded-xl squircle transition-colors"
           >
@@ -239,7 +240,7 @@ export const BudgetsPage = () => {
                 {/* Category Icon - show primary category or multi-icon */}
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: (primaryCategory?.color || '#6b7280') + '18' }}
+                  style={{ backgroundColor: `${primaryCategory?.color || '#6b7280'}18` }}
                 >
                   {budgetCategories.length > 1 ? (
                     <PieChart
@@ -355,6 +356,7 @@ export const BudgetsPage = () => {
                   ref={openMenuId === bp.budget.id ? menuRef : null}
                 >
                   <button
+                    type="button"
                     className="p-1.5 -mr-1 rounded-lg active:bg-surface-700/50 text-surface-500"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -372,6 +374,7 @@ export const BudgetsPage = () => {
                           <p className="text-[13px] text-surface-200 mb-3">Delete this budget?</p>
                           <div className="flex gap-2">
                             <button
+                              type="button"
                               className="flex-1 px-3 py-1.5 text-[12px] font-medium bg-surface-700 text-surface-300 rounded-lg active:bg-surface-600"
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -381,6 +384,7 @@ export const BudgetsPage = () => {
                               Cancel
                             </button>
                             <button
+                              type="button"
                               className="flex-1 px-3 py-1.5 text-[12px] font-medium bg-danger-500 text-white rounded-lg active:bg-danger-600"
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -394,6 +398,7 @@ export const BudgetsPage = () => {
                       ) : (
                         <>
                           <button
+                            type="button"
                             className="w-full px-4 py-2.5 text-left text-sm text-surface-200 active:bg-surface-700/50 flex items-center gap-3 transition-colors"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -405,6 +410,7 @@ export const BudgetsPage = () => {
                           </button>
                           <div className="h-px bg-surface-700 my-1" />
                           <button
+                            type="button"
                             className="w-full px-4 py-2.5 text-left text-sm text-danger-400 active:bg-danger-500/10 flex items-center gap-3 transition-colors"
                             onClick={(e) => {
                               e.stopPropagation();

@@ -425,6 +425,7 @@ export const AccountsPage = () => {
                       ref={openMenuId === account.id ? menuRef : null}
                     >
                       <button
+                        type="button"
                         className="p-1.5 -mr-1 rounded-lg active:bg-surface-700/50 text-surface-500"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -437,6 +438,7 @@ export const AccountsPage = () => {
                       {openMenuId === account.id && (
                         <div className="absolute right-0 top-full mt-1 w-44 bg-surface-800 border border-surface-700 rounded-xl squircle shadow-xl z-50 py-1 overflow-hidden animate-in fade-in-0 zoom-in-95 duration-150">
                           <button
+                            type="button"
                             className="w-full px-4 py-2.5 text-left text-sm text-surface-200 active:bg-surface-700/50 flex items-center gap-3 transition-colors"
                             onClick={() => handleTransferToAccount(account.id)}
                           >
@@ -444,6 +446,7 @@ export const AccountsPage = () => {
                             Transfer
                           </button>
                           <button
+                            type="button"
                             className="w-full px-4 py-2.5 text-left text-sm text-surface-200 active:bg-surface-700/50 flex items-center gap-3 transition-colors"
                             onClick={() => handleOpenEditModal(account)}
                           >
@@ -452,6 +455,7 @@ export const AccountsPage = () => {
                           </button>
                           <div className="h-px bg-surface-700 my-1" />
                           <button
+                            type="button"
                             className="w-full px-4 py-2.5 text-left text-sm text-danger-400 active:bg-danger-500/10 flex items-center gap-3 transition-colors"
                             onClick={() => handleOpenDeleteModal(account)}
                           >
@@ -467,6 +471,7 @@ export const AccountsPage = () => {
 
               {/* Add Account Card */}
               <button
+                type="button"
                 onClick={() => setActiveModal('add-account')}
                 className="border-2 border-dashed border-surface-700/70 active:border-surface-500 rounded-xl squircle p-6 flex items-center justify-center gap-3 transition-all duration-200 group"
               >

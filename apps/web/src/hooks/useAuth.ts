@@ -67,10 +67,10 @@ function convertSupabaseUser(session: Session): AuthUser {
     email: user.email,
     displayName: user.user_metadata?.full_name || user.user_metadata?.name || 'User',
     photoURL: user.user_metadata?.avatar_url,
-    provider: provider as any, // Supabase providers don't exactly match our types
+    provider: provider as 'google' | 'apple' | 'github',
   };
 
-  return convertOAuthUser(oauthUserData, provider as any);
+  return convertOAuthUser(oauthUserData, provider as 'google' | 'apple' | 'github');
 }
 
 /**

@@ -149,6 +149,7 @@ export const TransactionsPage = () => {
         />
         {searchQuery && (
           <button
+            type="button"
             onClick={() => setSearchQuery('')}
             className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-surface-500 hover:text-surface-300 transition-colors"
           >
@@ -161,6 +162,7 @@ export const TransactionsPage = () => {
       <div className="flex gap-1 p-1 bg-surface-800/40 rounded-xl squircle mb-5">
         {(['all', 'expense', 'income', 'savings'] as const).map((type) => (
           <button
+            type="button"
             key={type}
             onClick={() => setFilterType(type as FilterType)}
             className={`flex-1 py-2 rounded-lg text-[13px] font-semibold transition-all ${
