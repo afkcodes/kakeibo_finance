@@ -7,11 +7,20 @@
  */
 
 import type { AuthUser, LoginOptions, SignOutOptions } from '@kakeibo/core';
-import { convertOAuthUser, createGuestUser } from '@kakeibo/core';
+import {
+  convertOAuthUser,
+  createGuestUser,
+  getPendingMigrationData,
+  getPendingMigrationKey,
+  shouldAttemptMigration,
+} from '@kakeibo/core';
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
-import { useEffect } from 'react';
+import { useNavigate } from '@tanstack/react-router';
+import { useCallback, useEffect } from 'react';
 import { supabase } from '../services/auth/supabaseClient';
+import { adapter } from '../services/db/adapter';
 import { useAuthStore } from '../store/authStore';
+import { toastHelpers } from '../utils/toast';
 
 export interface UseAuthReturn {
   /** Current authenticated or guest user */
@@ -84,6 +93,56 @@ function convertSupabaseUser(session: Session): AuthUser {
 export const useAuth = (): UseAuthReturn => {
   const { user, isAuthenticated, isGuest, isLoading, setUser, setSession, setLoading, setError } =
     useAuthStore();
+  const navigate = useNavigate();
+
+  /**
+   * Attempt to migrate guest data to authenticated user
+   */
+  const attemptMigration = useCallback(async (toAuthUserId: string) => {
+    try {
+      // Check for pending migration
+      const pendingGuestId = localStorage.getItem(getPendingMigrationKey());
+
+      if (!pendingGuestId || !shouldAttemptMigration(pendingGuestId)) {
+        return;
+      }
+
+      console.log(`Attempting migration from ${pendingGuestId} to ${toAuthUserId}`);
+
+      // Perform migration
+      const result = await adapter.migrateGuestDataToUser(pendingGuestId, toAuthUserId);
+
+      if (result.success) {
+        // Clear pending migration flag
+        localStorage.removeItem(getPendingMigrationKey());
+
+        // Show success toast with counts
+        const { migratedCounts } = result;
+        const totalItems =
+          migratedCounts.transactions +
+          migratedCounts.budgets +
+          migratedCounts.goals +
+          migratedCounts.accounts +
+          migratedCounts.categories;
+
+        if (totalItems > 0) {
+          toastHelpers.success(
+            'Data migrated successfully',
+            `Transferred ${totalItems} items to your account: ${migratedCounts.transactions} transactions, ${migratedCounts.budgets} budgets, ${migratedCounts.goals} goals, ${migratedCounts.accounts} accounts, ${migratedCounts.categories} categories`
+          );
+        }
+      } else {
+        console.error('Migration failed:', result.error);
+        toastHelpers.error('Migration failed', result.error || 'Failed to transfer guest data');
+      }
+    } catch (error) {
+      console.error('Migration error:', error);
+      toastHelpers.error(
+        'Migration error',
+        error instanceof Error ? error.message : 'Failed to transfer guest data'
+      );
+    }
+  }, []);
 
   useEffect(() => {
     // Check for active session on mount
@@ -99,6 +158,9 @@ export const useAuth = (): UseAuthReturn => {
 
           setUser(authUser);
           setSession(authSession);
+
+          // Check for pending guest data migration
+          await attemptMigration(authUser.id);
         }
         // If no session and no persisted user, leave user as null
         // User will be redirected to /welcome by route guard
@@ -130,6 +192,13 @@ export const useAuth = (): UseAuthReturn => {
 
           setUser(authUser);
           setSession(authSession);
+
+          // Check for pending guest data migration
+          if (event === 'SIGNED_IN') {
+            await attemptMigration(authUser.id);
+            // Navigate to dashboard after successful sign-in
+            navigate({ to: '/dashboard' });
+          }
         } else if (event === 'SIGNED_OUT') {
           // User signed out - create new guest user
           const { user: guestUser } = createGuestUser();
@@ -142,7 +211,7 @@ export const useAuth = (): UseAuthReturn => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [setUser, setSession, setLoading, setError]); // Only run once on mount
+  }, [setUser, setSession, setLoading, setError, attemptMigration, navigate]); // Only run once on mount
 
   /**
    * Sign in with OAuth provider
@@ -228,6 +297,10 @@ export const useAuth = (): UseAuthReturn => {
     setUser(guestUser);
     setSession(null);
     setLoading(false);
+
+    // Store guest ID for potential migration when user signs in later
+    const { key, value } = getPendingMigrationData(guestUser.id);
+    localStorage.setItem(key, value);
   };
 
   return {

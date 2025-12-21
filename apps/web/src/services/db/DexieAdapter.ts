@@ -876,6 +876,117 @@ export class DexieAdapter implements IDatabaseAdapter {
 
     await db.accounts.update(transaction.accountId, { balance: newBalance, updatedAt: now });
   }
+
+  // ==================== Data Migration ====================
+
+  /**
+   * Migrate all data from guest user to authenticated user
+   */
+  async migrateGuestDataToUser(
+    fromGuestUserId: string,
+    toAuthUserId: string
+  ): Promise<{
+    success: boolean;
+    migratedCounts: {
+      transactions: number;
+      budgets: number;
+      goals: number;
+      accounts: number;
+      categories: number;
+    };
+    error?: string;
+  }> {
+    const counts = {
+      transactions: 0,
+      budgets: 0,
+      goals: 0,
+      accounts: 0,
+      categories: 0,
+    };
+
+    try {
+      // Perform all migrations in a single transaction for atomicity
+      await db.transaction(
+        'rw',
+        [db.transactions, db.budgets, db.goals, db.accounts, db.categories],
+        async () => {
+          const now = new Date();
+
+          // 1. Migrate transactions
+          const transactions = await db.transactions
+            .where('userId')
+            .equals(fromGuestUserId)
+            .toArray();
+          for (const transaction of transactions) {
+            await db.transactions.update(transaction.id, {
+              userId: toAuthUserId,
+              updatedAt: now,
+            });
+            counts.transactions++;
+          }
+
+          // 2. Migrate budgets
+          const budgets = await db.budgets.where('userId').equals(fromGuestUserId).toArray();
+          for (const budget of budgets) {
+            await db.budgets.update(budget.id, {
+              userId: toAuthUserId,
+              updatedAt: now,
+            });
+            counts.budgets++;
+          }
+
+          // 3. Migrate goals
+          const goals = await db.goals.where('userId').equals(fromGuestUserId).toArray();
+          for (const goal of goals) {
+            await db.goals.update(goal.id, {
+              userId: toAuthUserId,
+              updatedAt: now,
+            });
+            counts.goals++;
+          }
+
+          // 4. Migrate accounts
+          const accounts = await db.accounts.where('userId').equals(fromGuestUserId).toArray();
+          for (const account of accounts) {
+            await db.accounts.update(account.id, {
+              userId: toAuthUserId,
+              updatedAt: now,
+            });
+            counts.accounts++;
+          }
+
+          // 5. Migrate custom categories (skip default categories)
+          const categories = await db.categories
+            .where('userId')
+            .equals(fromGuestUserId)
+            .and((cat) => !cat.isDefault)
+            .toArray();
+          for (const category of categories) {
+            await db.categories.update(category.id, {
+              userId: toAuthUserId,
+              updatedAt: now,
+            });
+            counts.categories++;
+          }
+
+          // 6. Delete the guest user
+          await db.users.delete(fromGuestUserId);
+        }
+      );
+
+      return {
+        success: true,
+        migratedCounts: counts,
+      };
+    } catch (error) {
+      console.error('Migration failed:', error);
+      return {
+        success: false,
+        migratedCounts: counts,
+        error: error instanceof Error ? error.message : 'Migration failed',
+      };
+    }
+  }
 }
 
 // Export singleton instance
