@@ -1,6 +1,7 @@
 import { createRouter, RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { ToastRoot } from './components/ui';
 import reportWebVitals from './reportWebVitals.ts';
 // Import the generated route tree
@@ -33,8 +34,10 @@ if (rootElement && !rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <StrictMode>
-      <App />
-      <ToastRoot />
+      <ErrorBoundary>
+        <App />
+        <ToastRoot />
+      </ErrorBoundary>
     </StrictMode>
   );
 }
