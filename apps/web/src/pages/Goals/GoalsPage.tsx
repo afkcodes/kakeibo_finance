@@ -17,9 +17,9 @@ import { useCurrency, useGoalActions, useGoalProgress } from '../../hooks';
 import { useAppStore } from '../../store/appStore';
 
 export const GoalsPage = () => {
-  const { setActiveModal, currentUserId, setEditingGoal } = useAppStore();
+  const { setActiveModal, currentUser, setEditingGoal } = useAppStore();
   const { formatCurrency } = useCurrency();
-  const goalProgress = useGoalProgress(currentUserId);
+  const goalProgress = useGoalProgress(currentUser.id);
   const { deleteGoal } = useGoalActions();
 
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);

@@ -13,6 +13,7 @@
 
 import type { Category } from '@kakeibo/core';
 import { allDefaultCategories } from '@kakeibo/core';
+import { dexieAdapter } from './DexieAdapter';
 import { db } from './index';
 
 // Track which users have been initialized to prevent duplicate initialization
@@ -242,6 +243,49 @@ export const ensureDatabaseInitialized = async (userId: string): Promise<void> =
   }
 
   try {
+    // Ensure user exists in database
+    const { useAppStore } = await import('../../store/appStore');
+    const currentUser = useAppStore.getState().currentUser;
+    const existingUser = await dexieAdapter.getUser(userId);
+
+    if (!existingUser) {
+      // Create user in database with info from appStore
+      // Use put() directly to avoid constraint errors
+      await db.users.put({
+        id: currentUser.id,
+        email: currentUser.email || '',
+        displayName: currentUser.displayName || 'Guest User',
+        photoURL: currentUser.photoURL,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        settings: {
+          currency: 'USD',
+          dateFormat: 'MM/dd/yyyy',
+          theme: 'system',
+          language: 'en',
+          financialMonthStart: 1,
+          notifications: {
+            budgetAlerts: true,
+            billReminders: true,
+            weeklyReports: true,
+            unusualSpending: true,
+          },
+        },
+      });
+    } else {
+      // Update user info if it has changed (e.g., after OAuth sign-in)
+      if (
+        existingUser.email !== currentUser.email ||
+        existingUser.displayName !== currentUser.displayName
+      ) {
+        await dexieAdapter.updateUser(userId, {
+          email: currentUser.email || existingUser.email,
+          displayName: currentUser.displayName || existingUser.displayName,
+          photoURL: currentUser.photoURL,
+        });
+      }
+    }
+
     await initializeDefaultCategories(userId);
   } catch (error) {
     console.error('[DB Init] Failed to initialize database:', error);

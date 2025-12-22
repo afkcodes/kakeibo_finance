@@ -1,9 +1,7 @@
-import type { Account, Budget, Goal, Transaction } from '@kakeibo/core';
+import type { Account, AuthUser, Budget, Goal, Transaction } from '@kakeibo/core';
+import { createGuestUser } from '@kakeibo/core';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-
-// Default user ID for offline-first single-user mode
-const DEFAULT_USER_ID = 'default-user';
 
 // User settings interface
 export interface UserSettings {
@@ -35,6 +33,14 @@ export const defaultUserSettings: UserSettings = {
 };
 
 interface AppState {
+  // Current user (guest or authenticated)
+  currentUser: AuthUser;
+  setCurrentUser: (user: AuthUser) => void;
+
+  // Onboarding flag - true if user has seen welcome screen
+  hasCompletedOnboarding: boolean;
+  setHasCompletedOnboarding: (completed: boolean) => void;
+
   // User settings
   settings: UserSettings;
   updateSettings: (settings: Partial<UserSettings>) => void;
@@ -47,10 +53,6 @@ interface AppState {
   // Theme
   theme: 'light' | 'dark' | 'system';
   setTheme: (theme: 'light' | 'dark' | 'system') => void;
-
-  // Current user ID (for offline-first app)
-  currentUserId: string;
-  setCurrentUserId: (userId: string) => void;
 
   // Dashboard selected account (null = all accounts)
   selectedDashboardAccountId: string | null;
@@ -87,12 +89,31 @@ interface AppState {
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
+      // Initialize with guest user
+      currentUser: createGuestUser().user,
+      setCurrentUser: (user) => set({ currentUser: user }),
+
+      // Onboarding
+      hasCompletedOnboarding: false,
+      setHasCompletedOnboarding: (completed) => set({ hasCompletedOnboarding: completed }),
+
       // User settings
       settings: defaultUserSettings,
       updateSettings: (newSettings) =>
-        set((state) => ({
-          settings: { ...state.settings, ...newSettings },
-        })),
+        set((state) => {
+          const updatedSettings = { ...state.settings, ...newSettings };
+
+          // Update settings in database as well
+          import('../services/db/DexieAdapter').then(({ dexieAdapter }) => {
+            dexieAdapter
+              .updateUser(state.currentUser.id, { settings: updatedSettings })
+              .catch((err) => {
+                console.error('Failed to update user settings in database:', err);
+              });
+          });
+
+          return { settings: updatedSettings };
+        }),
 
       // UI state
       sidebarOpen: true,
@@ -102,10 +123,6 @@ export const useAppStore = create<AppState>()(
       // Theme
       theme: 'system',
       setTheme: (theme) => set({ theme }),
-
-      // Current user
-      currentUserId: DEFAULT_USER_ID,
-      setCurrentUserId: (userId) => set({ currentUserId: userId }),
 
       // Dashboard selected account
       selectedDashboardAccountId: null,
@@ -138,10 +155,11 @@ export const useAppStore = create<AppState>()(
       // Reset store to initial state
       resetStore: () =>
         set({
+          currentUser: createGuestUser().user,
+          hasCompletedOnboarding: false,
           settings: defaultUserSettings,
           sidebarOpen: true,
           theme: 'system',
-          currentUserId: DEFAULT_USER_ID,
           selectedDashboardAccountId: null,
           isLoading: false,
           activeModal: null,
@@ -154,9 +172,10 @@ export const useAppStore = create<AppState>()(
     {
       name: 'kakeibo-app-store',
       partialize: (state) => ({
+        currentUser: state.currentUser,
+        hasCompletedOnboarding: state.hasCompletedOnboarding,
         settings: state.settings,
         theme: state.theme,
-        currentUserId: state.currentUserId,
         selectedDashboardAccountId: state.selectedDashboardAccountId,
         sidebarOpen: state.sidebarOpen,
       }),

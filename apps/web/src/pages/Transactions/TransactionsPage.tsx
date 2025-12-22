@@ -18,12 +18,12 @@ type FilterType = 'all' | TransactionType | 'savings';
 
 export const TransactionsPage = () => {
   const { formatCurrency } = useCurrency();
-  const { setActiveModal, setEditingTransaction, currentUserId } = useAppStore();
-  const transactions = useTransactions(currentUserId);
+  const { setActiveModal, setEditingTransaction, currentUser } = useAppStore();
+  const transactions = useTransactions(currentUser.id);
   const { deleteTransaction } = useTransactionActions();
-  const categories = useCategories(currentUserId);
-  const goals = useGoals(currentUserId);
-  const accounts = useAccounts(currentUserId);
+  const categories = useCategories(currentUser.id);
+  const goals = useGoals(currentUser.id);
+  const accounts = useAccounts(currentUser.id);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<FilterType>('all');

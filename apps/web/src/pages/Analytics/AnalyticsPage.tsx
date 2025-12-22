@@ -24,9 +24,9 @@ import { useAppStore } from '../../store';
 type TimeRange = 'week' | 'month' | '3months' | '6months';
 
 export const AnalyticsPage = () => {
-  const { currentUserId } = useAppStore();
-  const transactions = useTransactions(currentUserId);
-  const categories = useCategories(currentUserId);
+  const { currentUser } = useAppStore();
+  const transactions = useTransactions(currentUser.id);
+  const categories = useCategories(currentUser.id);
   const { formatCurrency } = useCurrency();
   const { settings } = useAppStore();
   const [timeRange, setTimeRange] = useState<TimeRange>('month');

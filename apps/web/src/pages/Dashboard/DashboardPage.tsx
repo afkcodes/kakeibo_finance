@@ -44,16 +44,16 @@ export const DashboardPage = () => {
     selectedDashboardAccountId,
     setSelectedDashboardAccountId,
     settings,
-    currentUserId,
+    currentUser,
   } = useAppStore();
   const { user } = useAuth();
   const { formatCurrency, formatCurrencyCompact } = useCurrency();
-  const transactions = useTransactions(currentUserId);
+  const transactions = useTransactions(currentUser.id);
   const { deleteTransaction } = useTransactionActions();
-  const accounts = useAccounts(currentUserId);
-  const budgetProgress = useBudgetProgress(currentUserId);
-  const goalProgress = useGoalProgress(currentUserId);
-  const categories = useCategories(currentUserId);
+  const accounts = useAccounts(currentUser.id);
+  const budgetProgress = useBudgetProgress(currentUser.id);
+  const goalProgress = useGoalProgress(currentUser.id);
+  const categories = useCategories(currentUser.id);
   const [showBalance, setShowBalance] = useState(true);
   const [showAccountPicker, setShowAccountPicker] = useState(false);
   const accountPickerRef = useRef<HTMLDivElement>(null);

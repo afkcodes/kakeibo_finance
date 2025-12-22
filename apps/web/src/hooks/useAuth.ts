@@ -19,6 +19,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { useCallback, useEffect } from 'react';
 import { supabase } from '../services/auth/supabaseClient';
 import { adapter } from '../services/db/adapter';
+import { useAppStore } from '../store/appStore';
 import { useAuthStore } from '../store/authStore';
 import { toastHelpers } from '../utils/toast';
 
@@ -93,6 +94,7 @@ function convertSupabaseUser(session: Session): AuthUser {
 export const useAuth = (): UseAuthReturn => {
   const { user, isAuthenticated, isGuest, isLoading, setUser, setSession, setLoading, setError } =
     useAuthStore();
+  const { setCurrentUser, setHasCompletedOnboarding } = useAppStore();
   const navigate = useNavigate();
 
   /**
@@ -157,6 +159,7 @@ export const useAuth = (): UseAuthReturn => {
           const authSession = convertSupabaseSession(currentSession);
 
           setUser(authUser);
+          setCurrentUser(authUser);
           setSession(authSession);
 
           // Check for pending guest data migration
@@ -191,10 +194,24 @@ export const useAuth = (): UseAuthReturn => {
           const authSession = convertSupabaseSession(newSession);
 
           setUser(authUser);
+          setCurrentUser(authUser);
           setSession(authSession);
 
           // Check for pending guest data migration
           if (event === 'SIGNED_IN') {
+            setHasCompletedOnboarding(true); // Mark onboarding as complete
+
+            // Update user info in database with OAuth details
+            const { dexieAdapter } = await import('../services/db/DexieAdapter');
+            const existingUser = await dexieAdapter.getUser(authUser.id);
+            if (existingUser) {
+              await dexieAdapter.updateUser(authUser.id, {
+                email: authUser.email || existingUser.email,
+                displayName: authUser.displayName || existingUser.displayName,
+                photoURL: authUser.photoURL,
+              });
+            }
+
             await attemptMigration(authUser.id);
             // Navigate to dashboard after successful sign-in
             navigate({ to: '/dashboard' });
@@ -203,6 +220,7 @@ export const useAuth = (): UseAuthReturn => {
           // User signed out - create new guest user
           const { user: guestUser } = createGuestUser();
           setUser(guestUser);
+          setCurrentUser(guestUser);
           setSession(null);
         }
       }
@@ -211,7 +229,16 @@ export const useAuth = (): UseAuthReturn => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [setUser, setSession, setLoading, setError, attemptMigration, navigate]); // Only run once on mount
+  }, [
+    setUser,
+    setSession,
+    setLoading,
+    setError,
+    setHasCompletedOnboarding,
+    attemptMigration,
+    navigate,
+    setCurrentUser,
+  ]); // Only run once on mount
 
   /**
    * Sign in with OAuth provider
@@ -271,6 +298,7 @@ export const useAuth = (): UseAuthReturn => {
       // Create new guest user
       const { user: guestUser } = createGuestUser();
       setUser(guestUser);
+      setCurrentUser(guestUser);
       setSession(null);
 
       // TODO: Handle keepLocalData option
@@ -293,10 +321,15 @@ export const useAuth = (): UseAuthReturn => {
    * Start as guest (no auth)
    */
   const startAsGuest = () => {
-    const { user: guestUser } = createGuestUser();
+    // Use existing guest user from appStore if available
+    const existingGuest = useAppStore.getState().currentUser;
+    const guestUser = existingGuest.mode === 'guest' ? existingGuest : createGuestUser().user;
+
     setUser(guestUser);
+    setCurrentUser(guestUser);
     setSession(null);
     setLoading(false);
+    setHasCompletedOnboarding(true); // Mark onboarding as complete
 
     // Store guest ID for potential migration when user signs in later
     const { key, value } = getPendingMigrationData(guestUser.id);

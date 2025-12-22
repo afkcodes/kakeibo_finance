@@ -58,10 +58,10 @@ const AlertBadge = ({ progress }: { progress: BudgetProgress }) => {
 };
 
 export const BudgetsPage = () => {
-  const { currentUserId, setActiveModal, setEditingBudget, settings } = useAppStore();
+  const { currentUser, setActiveModal, setEditingBudget, settings } = useAppStore();
   const { formatCurrency } = useCurrency();
-  const budgetProgress = useBudgetProgress(currentUserId);
-  const categories = useCategories(currentUserId);
+  const budgetProgress = useBudgetProgress(currentUser.id);
+  const categories = useCategories(currentUser.id);
   const { deleteBudget } = useBudgetActions();
 
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
