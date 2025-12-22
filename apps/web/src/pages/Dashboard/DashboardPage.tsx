@@ -1,39 +1,39 @@
 import type { Account, Transaction } from '@kakeibo/core';
 import {
-  financialMonthStartDate,
-  formatFinancialMonthRange,
-  formatRelativeTime,
-  getSubcategoryById,
+    financialMonthStartDate,
+    formatFinancialMonthRange,
+    formatRelativeTime,
+    getSubcategoryById,
 } from '@kakeibo/core';
 import { Link } from '@tanstack/react-router';
 import {
-  ArrowDownLeft,
-  ArrowUpRight,
-  ChevronDown,
-  ChevronRight,
-  CreditCard,
-  Eye,
-  EyeOff,
-  Layers,
-  Settings,
-  Sparkles,
-  Target,
-  TrendingDown,
-  TrendingUp,
-  Wallet,
+    ArrowDownLeft,
+    ArrowUpRight,
+    ChevronDown,
+    ChevronRight,
+    CreditCard,
+    Eye,
+    EyeOff,
+    Layers,
+    Settings,
+    Sparkles,
+    Target,
+    TrendingDown,
+    TrendingUp,
+    Wallet,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { TransactionCard } from '../../components/features/transactions';
-import { Button, CategoryIcon, ProgressBar } from '../../components/ui';
+import { Button, CategoryIcon, Modal, ProgressBar } from '../../components/ui';
 import {
-  useAccounts,
-  useAuth,
-  useBudgetProgress,
-  useCategories,
-  useCurrency,
-  useGoalProgress,
-  useTransactionActions,
-  useTransactions,
+    useAccounts,
+    useAuth,
+    useBudgetProgress,
+    useCategories,
+    useCurrency,
+    useGoalProgress,
+    useTransactionActions,
+    useTransactions,
 } from '../../hooks';
 import { useAppStore } from '../../store/appStore';
 
@@ -44,19 +44,20 @@ export const DashboardPage = () => {
     selectedDashboardAccountId,
     setSelectedDashboardAccountId,
     settings,
-    currentUserId,
+    currentUser,
   } = useAppStore();
   const { user } = useAuth();
   const { formatCurrency, formatCurrencyCompact } = useCurrency();
-  const transactions = useTransactions(currentUserId);
+  const transactions = useTransactions(currentUser.id);
   const { deleteTransaction } = useTransactionActions();
-  const accounts = useAccounts(currentUserId);
-  const budgetProgress = useBudgetProgress(currentUserId);
-  const goalProgress = useGoalProgress(currentUserId);
-  const categories = useCategories(currentUserId);
+  const accounts = useAccounts(currentUser.id);
+  const budgetProgress = useBudgetProgress(currentUser.id);
+  const goalProgress = useGoalProgress(currentUser.id);
+  const categories = useCategories(currentUser.id);
   const [showBalance, setShowBalance] = useState(true);
   const [showAccountPicker, setShowAccountPicker] = useState(false);
   const accountPickerRef = useRef<HTMLDivElement>(null);
+  const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
 
   // Close account picker when clicking outside
   useEffect(() => {
@@ -115,8 +116,14 @@ export const DashboardPage = () => {
   };
 
   // Handle delete transaction
-  const handleDeleteTransaction = (transactionId: string) => {
-    deleteTransaction(transactionId);
+  const handleDeleteTransaction = (transaction: Transaction) => {
+    setTransactionToDelete(transaction);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!transactionToDelete) return;
+    deleteTransaction(transactionToDelete.id);
+    setTransactionToDelete(null);
   };
 
   // Calculate monthly stats based on filtered transactions
@@ -684,7 +691,7 @@ export const DashboardPage = () => {
                   formatCurrency={formatCurrency}
                   formatDate={(dateStr: string) => formatRelativeTime(new Date(dateStr))}
                   onEdit={() => handleEditTransaction(transaction)}
-                  onDelete={() => handleDeleteTransaction(transaction.id)}
+                  onDelete={() => handleDeleteTransaction(transaction)}
                   variant="compact"
                 />
               );
@@ -713,6 +720,32 @@ export const DashboardPage = () => {
           </Button>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={!!transactionToDelete}
+        onClose={() => setTransactionToDelete(null)}
+        title="Delete Transaction"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-surface-300 text-[14px]">
+            Are you sure you want to delete this transaction? This action cannot be undone.
+          </p>
+          <div className="flex gap-3">
+            <Button
+              variant="secondary"
+              className="flex-1"
+              onClick={() => setTransactionToDelete(null)}
+            >
+              Cancel
+            </Button>
+            <Button variant="danger" className="flex-1" onClick={handleConfirmDelete}>
+              Delete
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

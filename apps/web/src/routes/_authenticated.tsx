@@ -1,30 +1,20 @@
-import { createFileRoute, Outlet, type ParsedLocation, redirect } from '@tanstack/react-router';
-import type { MyRouterContext } from './__root';
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
+import { useAppStore } from '../store/appStore';
 
 export const Route = createFileRoute('/_authenticated')({
-  beforeLoad: ({ context, location }: { context: MyRouterContext; location: ParsedLocation }) => {
-    console.log('[_authenticated] beforeLoad - user:', context.auth.user);
-    console.log('[_authenticated] beforeLoad - isLoading:', context.auth.isLoading);
+  beforeLoad: async ({ location }) => {
+    // Check if user has completed onboarding (seen welcome screen)
+    const hasCompletedOnboarding = useAppStore.getState().hasCompletedOnboarding;
 
-    // Don't redirect while auth is loading
-    if (context.auth.isLoading) {
-      return;
+    // If haven't completed onboarding, redirect to welcome
+    if (!hasCompletedOnboarding) {
+      throw redirect({
+        to: '/welcome',
+        search: {
+          redirect: location.href,
+        },
+      });
     }
-
-    // Allow access if user exists (guest or authenticated)
-    if (context.auth.user) {
-      return;
-    }
-
-    console.log('[_authenticated] No user - redirecting to /welcome');
-
-    // No user - redirect to welcome
-    throw redirect({
-      to: '/welcome',
-      search: {
-        redirect: location.href,
-      },
-    });
   },
   component: () => <Outlet />,
 });

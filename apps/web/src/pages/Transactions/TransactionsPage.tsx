@@ -2,6 +2,7 @@ import type { Transaction, TransactionType } from '@kakeibo/core';
 import { getSubcategoryById } from '@kakeibo/core';
 import { Receipt, Search, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { TransactionListSkeleton } from '../../components/common';
 import { TransactionCard } from '../../components/features/transactions';
 import { Button, Modal } from '../../components/ui';
 import {
@@ -18,12 +19,12 @@ type FilterType = 'all' | TransactionType | 'savings';
 
 export const TransactionsPage = () => {
   const { formatCurrency } = useCurrency();
-  const { setActiveModal, setEditingTransaction, currentUserId } = useAppStore();
-  const transactions = useTransactions(currentUserId);
+  const { setActiveModal, setEditingTransaction, currentUser } = useAppStore();
+  const transactions = useTransactions(currentUser.id);
   const { deleteTransaction } = useTransactionActions();
-  const categories = useCategories(currentUserId);
-  const goals = useGoals(currentUserId);
-  const accounts = useAccounts(currentUserId);
+  const categories = useCategories(currentUser.id);
+  const goals = useGoals(currentUser.id);
+  const accounts = useAccounts(currentUser.id);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<FilterType>('all');
@@ -184,7 +185,9 @@ export const TransactionsPage = () => {
 
       {/* Transactions List */}
       <div className="space-y-5">
-        {groupedTransactions.length === 0 ? (
+        {transactions === undefined ? (
+          <TransactionListSkeleton count={8} />
+        ) : groupedTransactions.length === 0 ? (
           <div className="text-center py-20">
             <div className="w-16 h-16 rounded-xl squircle bg-surface-800/50 flex items-center justify-center mx-auto mb-4">
               <Receipt className="w-7 h-7 text-surface-600" />

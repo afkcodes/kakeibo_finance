@@ -11,15 +11,16 @@ import {
   Wallet,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { GoalListSkeleton } from '../../components/common';
 import { ContributeGoalModal } from '../../components/features/goals/ContributeGoalModal';
 import { Button, Modal } from '../../components/ui';
 import { useCurrency, useGoalActions, useGoalProgress } from '../../hooks';
 import { useAppStore } from '../../store/appStore';
 
 export const GoalsPage = () => {
-  const { setActiveModal, currentUserId, setEditingGoal } = useAppStore();
+  const { setActiveModal, currentUser, setEditingGoal } = useAppStore();
   const { formatCurrency } = useCurrency();
-  const goalProgress = useGoalProgress(currentUserId);
+  const goalProgress = useGoalProgress(currentUser.id);
   const { deleteGoal } = useGoalActions();
 
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -164,7 +165,9 @@ export const GoalsPage = () => {
       )}
 
       {/* Goals List */}
-      {activeGoals.length === 0 ? (
+      {goalProgress === undefined ? (
+        <GoalListSkeleton count={4} />
+      ) : activeGoals.length === 0 ? (
         <div className="text-center py-20">
           <div className="w-16 h-16 rounded-xl squircle bg-surface-800/50 flex items-center justify-center mx-auto mb-4">
             <Target className="w-7 h-7 text-surface-600" />

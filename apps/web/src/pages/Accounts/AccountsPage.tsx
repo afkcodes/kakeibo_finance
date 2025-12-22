@@ -15,6 +15,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { AccountListSkeleton } from '../../components/common';
 import { Button, Input, Modal, Select } from '../../components/ui';
 import { useAccountActions, useAccounts, useCurrency } from '../../hooks';
 import { useAppStore } from '../../store/appStore';
@@ -69,9 +70,9 @@ const colorOptions = [
 ];
 
 export const AccountsPage = () => {
-  const { currentUserId, setActiveModal } = useAppStore();
+  const { currentUser, setActiveModal } = useAppStore();
   const { formatCurrency } = useCurrency();
-  const accounts = useAccounts(currentUserId);
+  const accounts = useAccounts(currentUser.id);
   const { deleteAccount, updateAccount } = useAccountActions();
 
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -357,7 +358,9 @@ export const AccountsPage = () => {
             </span>
           </div>
 
-          {activeAccounts.length === 0 ? (
+          {accounts === undefined ? (
+            <AccountListSkeleton count={3} />
+          ) : activeAccounts.length === 0 ? (
             <div className="bg-surface-800/40 border border-surface-700/30 rounded-xl squircle p-8 text-center">
               <div className="w-16 h-16 bg-surface-700/50 rounded-xl squircle flex items-center justify-center mx-auto mb-4">
                 <Wallet className="w-8 h-8 text-surface-400" />

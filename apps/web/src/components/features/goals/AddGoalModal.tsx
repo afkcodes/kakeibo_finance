@@ -38,8 +38,8 @@ const colorOptions = [
 ];
 
 export const AddGoalModal = () => {
-  const { activeModal, setActiveModal, currentUserId, editingGoal, setEditingGoal } = useAppStore();
-  const accounts = useAccounts(currentUserId);
+  const { activeModal, setActiveModal, currentUser, editingGoal, setEditingGoal } = useAppStore();
+  const accounts = useAccounts(currentUser.id);
   const { addGoal, updateGoal } = useGoalActions();
 
   const isOpen = activeModal === 'add-goal';
@@ -101,7 +101,7 @@ export const AddGoalModal = () => {
       });
     } else {
       // Create new goal
-      await addGoal(currentUserId, {
+      await addGoal(currentUser.id, {
         name: data.name,
         type: data.type,
         targetAmount: data.targetAmount,

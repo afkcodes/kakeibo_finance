@@ -18,19 +18,23 @@ import {
   Upload,
   User,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Button, Modal, Select } from '../../components/ui';
 import { useAuth } from '../../hooks';
+import { dexieAdapter } from '../../services/db/DexieAdapter';
 import { useAppStore } from '../../store/appStore';
 import { toastHelpers } from '../../utils';
 
 export const SettingsPage = () => {
-  const { theme, setTheme, settings, updateSettings } = useAppStore();
+  const { theme, setTheme, settings, updateSettings, currentUser } = useAppStore();
   const { user, isAuthenticated, isGuest, signIn, signOut } = useAuth();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showMonthPicker, setShowMonthPicker] = useState(false);
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const themeOptions = [
     { value: 'light', label: 'Light', icon: Sun },
@@ -67,29 +71,79 @@ export const SettingsPage = () => {
     }
   };
 
-  const handleExportData = () => {
+  const handleExportData = async () => {
     try {
-      // TODO: Implement export functionality
-      console.log('Export data - not implemented');
-      toastHelpers.warning('Feature coming soon', 'Export data functionality will be implemented');
+      setIsExporting(true);
+
+      // Export database for current user
+      const jsonData = await dexieAdapter.exportDatabase(currentUser.id);
+
+      // Create blob and download
+      const blob = new Blob([jsonData], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `kakeibo-backup-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toastHelpers.success('Export successful', 'Your data has been exported successfully');
     } catch (error) {
       toastHelpers.error(
         'Failed to export data',
         error instanceof Error ? error.message : 'Unknown error'
       );
+    } finally {
+      setIsExporting(false);
     }
   };
 
   const handleImportData = () => {
+    // Trigger file input click
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
     try {
-      // TODO: Implement import functionality
-      console.log('Import data - not implemented');
-      toastHelpers.warning('Feature coming soon', 'Import data functionality will be implemented');
+      setIsImporting(true);
+
+      // Read file content
+      const text = await file.text();
+
+      // Import to current user
+      await dexieAdapter.importDatabase(text, currentUser.id);
+
+      toastHelpers.success(
+        'Import successful',
+        'Your data has been imported successfully. Please refresh the page.'
+      );
+
+      // Clear file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+
+      // Refresh page after 2 seconds to reload data
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
     } catch (error) {
       toastHelpers.error(
         'Failed to import data',
-        error instanceof Error ? error.message : 'Unknown error'
+        error instanceof Error ? error.message : 'Invalid backup file'
       );
+
+      // Clear file input on error
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } finally {
+      setIsImporting(false);
     }
   };
 
@@ -413,12 +467,15 @@ export const SettingsPage = () => {
             <button
               type="button"
               onClick={handleExportData}
-              className="w-full flex items-center justify-between px-5 py-4 hover:bg-surface-700/30 transition-colors"
+              disabled={isExporting}
+              className="w-full flex items-center justify-between px-5 py-4 hover:bg-surface-700/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <div className="flex items-center gap-3">
                 <Download className="w-5 h-5 text-surface-400" />
                 <div className="text-left">
-                  <p className="font-medium text-surface-100">Export Data</p>
+                  <p className="font-medium text-surface-100">
+                    {isExporting ? 'Exporting...' : 'Export Data'}
+                  </p>
                   <p className="text-sm text-surface-400">Create encrypted backup of your data</p>
                 </div>
               </div>
@@ -428,12 +485,15 @@ export const SettingsPage = () => {
             <button
               type="button"
               onClick={handleImportData}
-              className="w-full flex items-center justify-between px-5 py-4 hover:bg-surface-700/30 transition-colors"
+              disabled={isImporting}
+              className="w-full flex items-center justify-between px-5 py-4 hover:bg-surface-700/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <div className="flex items-center gap-3">
                 <Upload className="w-5 h-5 text-surface-400" />
                 <div className="text-left">
-                  <p className="font-medium text-surface-100">Import Data</p>
+                  <p className="font-medium text-surface-100">
+                    {isImporting ? 'Importing...' : 'Import Data'}
+                  </p>
                   <p className="text-sm text-surface-400">
                     Import from JSON or encrypted backup file
                   </p>
@@ -552,6 +612,15 @@ export const SettingsPage = () => {
           </div>
         </div>
       </Modal>
+
+      {/* Hidden file input for import */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".json"
+        className="hidden"
+        onChange={handleFileSelect}
+      />
     </>
   );
 };

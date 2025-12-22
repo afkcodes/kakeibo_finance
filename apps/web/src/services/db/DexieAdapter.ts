@@ -20,6 +20,7 @@ import type {
   CreateCategoryInput,
   CreateGoalInput,
   CreateTransactionInput,
+  ExportData,
   Goal,
   GoalFilters,
   IDatabaseAdapter,
@@ -33,7 +34,17 @@ import type {
   UpdateTransactionInput,
   User,
 } from '@kakeibo/core';
-import { generateId } from '@kakeibo/core';
+import {
+  cleanExportData,
+  detectBackupUserId,
+  generateId,
+  generateMigrationReport,
+  migrateBudgetCategoryIds,
+  normalizeCategoryId,
+  normalizeCategoryIdsInRecord,
+  remapUserId,
+  validateFinancialMonthStartDay,
+} from '@kakeibo/core';
 import { db } from './index';
 
 // ID generators with entity-specific prefixes for better debugging and clarity
@@ -85,7 +96,14 @@ export class DexieAdapter implements IDatabaseAdapter {
   async getAccounts(userId: string, filters?: AccountFilters): Promise<Account[]> {
     const query = db.accounts.where('userId').equals(userId);
 
-    const accounts = await query.toArray();
+    let accounts = await query.toArray();
+
+    // Ensure dates are Date objects
+    accounts = accounts.map((a) => ({
+      ...a,
+      createdAt: a.createdAt instanceof Date ? a.createdAt : new Date(a.createdAt),
+      updatedAt: a.updatedAt instanceof Date ? a.updatedAt : new Date(a.updatedAt),
+    }));
 
     // Apply filters
     if (!filters) return accounts;
@@ -197,6 +215,14 @@ export class DexieAdapter implements IDatabaseAdapter {
     const query = db.transactions.where('userId').equals(userId);
 
     let transactions = await query.toArray();
+
+    // Ensure dates are Date objects (they might be strings after import/storage)
+    transactions = transactions.map((t) => ({
+      ...t,
+      date: t.date instanceof Date ? t.date : new Date(t.date),
+      createdAt: t.createdAt instanceof Date ? t.createdAt : new Date(t.createdAt),
+      updatedAt: t.updatedAt instanceof Date ? t.updatedAt : new Date(t.updatedAt),
+    }));
 
     // Apply filters
     if (filters) {
@@ -413,7 +439,20 @@ export class DexieAdapter implements IDatabaseAdapter {
   async getBudgets(userId: string, filters?: BudgetFilters): Promise<Budget[]> {
     const query = db.budgets.where('userId').equals(userId);
 
-    const budgets = await query.toArray();
+    let budgets = await query.toArray();
+
+    // Ensure dates are Date objects
+    budgets = budgets.map((b) => ({
+      ...b,
+      startDate: b.startDate instanceof Date ? b.startDate : new Date(b.startDate),
+      endDate: b.endDate
+        ? b.endDate instanceof Date
+          ? b.endDate
+          : new Date(b.endDate)
+        : undefined,
+      createdAt: b.createdAt instanceof Date ? b.createdAt : new Date(b.createdAt),
+      updatedAt: b.updatedAt instanceof Date ? b.updatedAt : new Date(b.updatedAt),
+    }));
 
     if (!filters) return budgets;
 
@@ -500,7 +539,19 @@ export class DexieAdapter implements IDatabaseAdapter {
   async getGoals(userId: string, filters?: GoalFilters): Promise<Goal[]> {
     const query = db.goals.where('userId').equals(userId);
 
-    const goals = await query.toArray();
+    let goals = await query.toArray();
+
+    // Ensure dates are Date objects
+    goals = goals.map((g) => ({
+      ...g,
+      deadline: g.deadline
+        ? g.deadline instanceof Date
+          ? g.deadline
+          : new Date(g.deadline)
+        : undefined,
+      createdAt: g.createdAt instanceof Date ? g.createdAt : new Date(g.createdAt),
+      updatedAt: g.updatedAt instanceof Date ? g.updatedAt : new Date(g.updatedAt),
+    }));
 
     if (!filters) return goals;
 
@@ -692,8 +743,22 @@ export class DexieAdapter implements IDatabaseAdapter {
   // ==================== Backup & Restore ====================
 
   async exportDatabase(userId?: string): Promise<string> {
-    const data = {
-      users: userId ? [await db.users.get(userId)].filter(Boolean) : await db.users.toArray(),
+    // Get user's settings if userId provided
+    let settings;
+    let users: User[] = [];
+
+    if (userId) {
+      const user = await db.users.get(userId);
+      if (user) {
+        users = [user];
+        settings = user.settings;
+      }
+    } else {
+      users = await db.users.toArray();
+    }
+
+    const exportData: ExportData = {
+      users,
       accounts: userId
         ? await db.accounts.where('userId').equals(userId).toArray()
         : await db.accounts.toArray(),
@@ -709,26 +774,111 @@ export class DexieAdapter implements IDatabaseAdapter {
       goals: userId
         ? await db.goals.where('userId').equals(userId).toArray()
         : await db.goals.toArray(),
+      settings,
+      exportedAt: new Date().toISOString(),
+      version: '2.0.0', // App version
     };
 
-    return JSON.stringify(data, null, 2);
+    return JSON.stringify(exportData, null, 2);
   }
 
-  async importDatabase(jsonData: string, _targetUserId?: string): Promise<void> {
-    const data = JSON.parse(jsonData);
+  async importDatabase(jsonData: string, targetUserId?: string): Promise<void> {
+    const rawData = JSON.parse(jsonData) as ExportData;
+
+    // Clean and validate data
+    const data = cleanExportData(rawData);
+
+    // Detect source user ID
+    const sourceUserId = detectBackupUserId(data);
+
+    // Generate migration report for logging
+    const report = generateMigrationReport(data);
+    console.log('Import Report:', report);
 
     await db.transaction(
       'rw',
       [db.users, db.accounts, db.categories, db.transactions, db.budgets, db.goals],
       async () => {
-        if (data.users) await db.users.bulkPut(data.users);
-        if (data.accounts) await db.accounts.bulkPut(data.accounts);
-        if (data.categories) await db.categories.bulkPut(data.categories);
-        if (data.transactions) await db.transactions.bulkPut(data.transactions);
-        if (data.budgets) await db.budgets.bulkPut(data.budgets);
-        if (data.goals) await db.goals.bulkPut(data.goals);
+        // 1. Handle user records (update existing user if targetUserId provided)
+        if (data.users && targetUserId) {
+          const user = await db.users.get(targetUserId);
+          if (user && data.settings) {
+            // Merge settings from backup with existing user
+            await db.users.update(targetUserId, {
+              settings: {
+                ...user.settings,
+                ...data.settings,
+                financialMonthStart: validateFinancialMonthStartDay(
+                  data.settings.financialMonthStart,
+                  user.settings?.financialMonthStart ?? 1
+                ),
+              },
+            });
+          }
+        } else if (data.users && !targetUserId) {
+          // Import users as-is (full database restore)
+          await db.users.bulkPut(data.users);
+        }
+
+        // 2. Import accounts with user ID remapping
+        if (data.accounts) {
+          const accounts =
+            targetUserId && sourceUserId
+              ? data.accounts.map((acc) => remapUserId(acc, targetUserId))
+              : data.accounts;
+          await db.accounts.bulkPut(accounts);
+        }
+
+        // 3. Import categories with normalization and user ID remapping
+        if (data.categories) {
+          const categories = data.categories.map((cat) => {
+            // Normalize category ID for v1 compatibility
+            const normalized = { ...cat, id: normalizeCategoryId(cat.id) };
+            return targetUserId && sourceUserId
+              ? remapUserId(normalized, targetUserId)
+              : normalized;
+          });
+          await db.categories.bulkPut(categories);
+        }
+
+        // 4. Import transactions with category ID normalization and user ID remapping
+        if (data.transactions) {
+          const transactions = data.transactions.map((txn) => {
+            // Normalize category IDs in transaction
+            const normalized = normalizeCategoryIdsInRecord(txn);
+            return targetUserId && sourceUserId
+              ? remapUserId(normalized, targetUserId)
+              : normalized;
+          });
+          await db.transactions.bulkPut(transactions);
+        }
+
+        // 5. Import budgets with multi-category migration and normalization
+        if (data.budgets) {
+          const budgets = data.budgets.map((budget) => {
+            // Migrate old single-category format to new multi-category format
+            const migrated = migrateBudgetCategoryIds(budget);
+            // Normalize category IDs
+            const normalized = normalizeCategoryIdsInRecord(migrated);
+            return targetUserId && sourceUserId
+              ? remapUserId(normalized, targetUserId)
+              : normalized;
+          });
+          await db.budgets.bulkPut(budgets);
+        }
+
+        // 6. Import goals with user ID remapping
+        if (data.goals) {
+          const goals =
+            targetUserId && sourceUserId
+              ? data.goals.map((goal) => remapUserId(goal, targetUserId))
+              : data.goals;
+          await db.goals.bulkPut(goals);
+        }
       }
     );
+
+    console.log('Import completed successfully');
   }
 
   async clearDatabase(): Promise<void> {
@@ -908,7 +1058,7 @@ export class DexieAdapter implements IDatabaseAdapter {
       // Perform all migrations in a single transaction for atomicity
       await db.transaction(
         'rw',
-        [db.transactions, db.budgets, db.goals, db.accounts, db.categories],
+        [db.transactions, db.budgets, db.goals, db.accounts, db.categories, db.users],
         async () => {
           const now = new Date();
 
@@ -962,10 +1112,12 @@ export class DexieAdapter implements IDatabaseAdapter {
             .and((cat) => !cat.isDefault)
             .toArray();
           for (const category of categories) {
-            await db.categories.update(category.id, {
-              userId: toAuthUserId,
-              updatedAt: now,
-            });
+            await db.categories
+              .where('id')
+              .equals(category.id)
+              .modify((cat) => {
+                cat.userId = toAuthUserId;
+              });
             counts.categories++;
           }
 

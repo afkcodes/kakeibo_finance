@@ -1,29 +1,26 @@
-import { createRootRouteWithContext, Link, Outlet, useLocation } from '@tanstack/react-router';
+import { createRootRoute, Link, Outlet, useLocation } from '@tanstack/react-router';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  ArrowRightLeft,
-  BarChart3,
-  LayoutDashboard,
-  PieChart,
-  PiggyBank,
-  Plus,
-  Target,
-  Wallet,
+    ArrowRightLeft,
+    BarChart3,
+    LayoutDashboard,
+    PieChart,
+    PiggyBank,
+    Plus,
+    Target,
+    Wallet,
 } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { AddAccountModal } from '../components/features/accounts/AddAccountModal';
 import { AddBudgetModal } from '../components/features/budgets/AddBudgetModal';
 import { AddGoalModal } from '../components/features/goals/AddGoalModal';
 import { AddTransactionModal } from '../components/features/transactions/AddTransactionModal';
-import type { UseAuthReturn } from '../hooks/useAuth';
+import { useAuth } from '../hooks/useAuth';
+import { OfflineBanner } from '../hooks/useNetworkStatus';
 import { ensureDatabaseInitialized } from '../services/db/initializeDatabase';
 import { useAppStore } from '../store';
 
-export interface MyRouterContext {
-  auth: UseAuthReturn;
-}
-
-export const Route = createRootRouteWithContext<MyRouterContext>()({
+export const Route = createRootRoute({
   component: RootLayout,
 });
 
@@ -39,16 +36,20 @@ const navigationItems = [
 function RootLayout() {
   const location = useLocation();
 
+  // Initialize auth - this will handle OAuth callback and session management
+  useAuth();
+
   // Use selectors to avoid unnecessary re-renders when unrelated store state changes
   const activeModal = useAppStore((state) => state.activeModal);
   const setActiveModal = useAppStore((state) => state.setActiveModal);
-  const currentUserId = useAppStore((state) => state.currentUserId);
+  const currentUser = useAppStore((state) => state.currentUser);
   const editingTransaction = useAppStore((state) => state.editingTransaction);
+  const editingBudget = useAppStore((state) => state.editingBudget);
 
   // Initialize database with default categories on first load
   // Empty dependency array ensures this only runs once on mount
   useEffect(() => {
-    const userId = useAppStore.getState().currentUserId;
+    const userId = useAppStore.getState().currentUser.id;
     ensureDatabaseInitialized(userId).catch((error) => {
       console.error('Failed to initialize database:', error);
       // Note: Don't show toast here as it happens on app load before ToastRoot is mounted
@@ -81,6 +82,9 @@ function RootLayout() {
 
   return (
     <div className="min-h-screen bg-surface-950">
+      {/* Offline Banner */}
+      <OfflineBanner />
+
       {/* Main Content */}
       <main className="px-4 py-4 pb-24">
         <div className="mx-auto max-w-7xl">
@@ -150,19 +154,20 @@ function RootLayout() {
       <AddTransactionModal
         isOpen={activeModal === 'add-transaction'}
         onClose={() => setActiveModal(null)}
-        userId={currentUserId}
+        userId={currentUser.id}
         editingTransaction={editingTransaction ?? undefined}
       />
       <AddBudgetModal
         isOpen={activeModal === 'add-budget'}
         onClose={() => setActiveModal(null)}
-        userId={currentUserId}
+        userId={currentUser.id}
+        editingBudget={editingBudget ?? undefined}
       />
       <AddGoalModal />
       <AddAccountModal
         isOpen={activeModal === 'add-account'}
         onClose={() => setActiveModal(null)}
-        userId={currentUserId}
+        userId={currentUser.id}
       />
     </div>
   );

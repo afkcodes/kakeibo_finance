@@ -2,7 +2,8 @@ import type { Budget, BudgetProgress, Category } from '@kakeibo/core';
 import { financialMonthEndDate } from '@kakeibo/core';
 import { AlertTriangle, MoreVertical, Pencil, PieChart, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { CategoryIcon } from '../../components/ui';
+import { BudgetListSkeleton } from '../../components/common';
+import { Button, CategoryIcon, Modal } from '../../components/ui';
 import { useBudgetActions, useBudgetProgress, useCategories, useCurrency } from '../../hooks';
 import { useAppStore } from '../../store/appStore';
 
@@ -58,14 +59,14 @@ const AlertBadge = ({ progress }: { progress: BudgetProgress }) => {
 };
 
 export const BudgetsPage = () => {
-  const { currentUserId, setActiveModal, setEditingBudget, settings } = useAppStore();
+  const { currentUser, setActiveModal, setEditingBudget, settings } = useAppStore();
   const { formatCurrency } = useCurrency();
-  const budgetProgress = useBudgetProgress(currentUserId);
-  const categories = useCategories(currentUserId);
+  const budgetProgress = useBudgetProgress(currentUser.id);
+  const categories = useCategories(currentUser.id);
   const { deleteBudget } = useBudgetActions();
 
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  const [deletingBudgetId, setDeletingBudgetId] = useState<string | null>(null);
+  const [budgetToDelete, setBudgetToDelete] = useState<Budget | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Close menu when clicking outside
@@ -73,7 +74,6 @@ export const BudgetsPage = () => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setOpenMenuId(null);
-        setDeletingBudgetId(null);
       }
     };
 
@@ -89,10 +89,11 @@ export const BudgetsPage = () => {
     setOpenMenuId(null);
   };
 
-  const handleDeleteBudget = async (budgetId: string) => {
-    await deleteBudget(budgetId);
+  const handleConfirmDelete = async () => {
+    if (!budgetToDelete) return;
+    await deleteBudget(budgetToDelete.id);
+    setBudgetToDelete(null);
     setOpenMenuId(null);
-    setDeletingBudgetId(null);
   };
 
   // Create a map of category id to category for quick lookup
@@ -205,7 +206,9 @@ export const BudgetsPage = () => {
       )}
 
       {/* Budget List */}
-      {budgetProgress.length === 0 ? (
+      {budgetProgress === undefined ? (
+        <BudgetListSkeleton count={4} />
+      ) : budgetProgress.length === 0 ? (
         <div className="text-center py-20">
           <div className="w-16 h-16 rounded-xl squircle bg-surface-800/50 flex items-center justify-center mx-auto mb-4">
             <PieChart className="w-7 h-7 text-surface-600" />
@@ -361,7 +364,6 @@ export const BudgetsPage = () => {
                     onClick={(e) => {
                       e.stopPropagation();
                       setOpenMenuId(openMenuId === bp.budget.id ? null : bp.budget.id);
-                      setDeletingBudgetId(null);
                     }}
                   >
                     <MoreVertical className="w-5 h-5" />
@@ -369,59 +371,30 @@ export const BudgetsPage = () => {
 
                   {openMenuId === bp.budget.id && (
                     <div className="absolute right-0 top-full mt-1 w-40 bg-surface-800 border border-surface-700 rounded-xl squircle shadow-xl z-50 py-1 overflow-hidden animate-in fade-in-0 zoom-in-95 duration-150">
-                      {deletingBudgetId === bp.budget.id ? (
-                        <div className="px-4 py-3">
-                          <p className="text-[13px] text-surface-200 mb-3">Delete this budget?</p>
-                          <div className="flex gap-2">
-                            <button
-                              type="button"
-                              className="flex-1 px-3 py-1.5 text-[12px] font-medium bg-surface-700 text-surface-300 rounded-lg active:bg-surface-600"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setDeletingBudgetId(null);
-                              }}
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              type="button"
-                              className="flex-1 px-3 py-1.5 text-[12px] font-medium bg-danger-500 text-white rounded-lg active:bg-danger-600"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteBudget(bp.budget.id);
-                              }}
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          <button
-                            type="button"
-                            className="w-full px-4 py-2.5 text-left text-sm text-surface-200 active:bg-surface-700/50 flex items-center gap-3 transition-colors"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditBudget(bp.budget);
-                            }}
-                          >
-                            <Pencil className="w-4 h-4 text-surface-400" />
-                            Edit Budget
-                          </button>
-                          <div className="h-px bg-surface-700 my-1" />
-                          <button
-                            type="button"
-                            className="w-full px-4 py-2.5 text-left text-sm text-danger-400 active:bg-danger-500/10 flex items-center gap-3 transition-colors"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDeletingBudgetId(bp.budget.id);
-                            }}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                            Delete
-                          </button>
-                        </>
-                      )}
+                      <button
+                        type="button"
+                        className="w-full px-4 py-2.5 text-left text-sm text-surface-200 active:bg-surface-700/50 flex items-center gap-3 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditBudget(bp.budget);
+                        }}
+                      >
+                        <Pencil className="w-4 h-4 text-surface-400" />
+                        Edit Budget
+                      </button>
+                      <div className="h-px bg-surface-700 my-1" />
+                      <button
+                        type="button"
+                        className="w-full px-4 py-2.5 text-left text-sm text-danger-400 active:bg-danger-500/10 flex items-center gap-3 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setBudgetToDelete(bp.budget);
+                          setOpenMenuId(null);
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Delete
+                      </button>
                     </div>
                   )}
                 </div>
@@ -430,6 +403,32 @@ export const BudgetsPage = () => {
           })}
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={!!budgetToDelete}
+        onClose={() => setBudgetToDelete(null)}
+        title="Delete Budget"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-surface-300 text-[14px]">
+            Are you sure you want to delete{' '}
+            <span className="font-semibold text-surface-100">
+              "{budgetToDelete?.name || 'this budget'}"
+            </span>
+            ? This action cannot be undone.
+          </p>
+          <div className="flex gap-3">
+            <Button variant="secondary" className="flex-1" onClick={() => setBudgetToDelete(null)}>
+              Cancel
+            </Button>
+            <Button variant="danger" className="flex-1" onClick={handleConfirmDelete}>
+              Delete
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

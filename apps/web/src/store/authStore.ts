@@ -73,8 +73,8 @@ const initialState: AuthState = {
   session: null,
   isAuthenticated: false,
   isGuest: true, // Start as guest until we know otherwise
-  isLoading: true, // Start as loading until we check session
-  error: null,
+  isLoading: true as boolean, // Start as loading until we check session
+  error: null as AuthError | null,
 };
 
 /**
@@ -100,8 +100,8 @@ const initialState: AuthState = {
  * ```
  */
 export const useAuthStore = create<AuthStore>()(
-  persist(
-    (set, get) => ({
+  persist<AuthStore>(
+    (set, get): AuthStore => ({
       // Initial state
       ...initialState,
 
@@ -113,7 +113,7 @@ export const useAuthStore = create<AuthStore>()(
           user,
           isAuthenticated: user?.mode === 'authenticated',
           isGuest: user?.mode === 'guest' || user === null,
-          error: null, // Clear error on successful user set
+          error: null as AuthError | null, // Clear error on successful user set
         });
       },
 
@@ -133,13 +133,13 @@ export const useAuthStore = create<AuthStore>()(
         console.error('[AuthStore] Setting error:', error);
 
         set({
-          error,
-          isLoading: false, // Stop loading on error
+          error: error as AuthError | null,
+          isLoading: false as boolean, // Stop loading on error
         });
       },
 
       clearError: () => {
-        set({ error: null });
+        set({ error: null as AuthError | null });
       },
 
       reset: () => {
@@ -147,7 +147,7 @@ export const useAuthStore = create<AuthStore>()(
 
         set({
           ...initialState,
-          isLoading: false, // Don't show loading after reset
+          isLoading: false as boolean, // Don't show loading after reset
         });
       },
 
@@ -177,24 +177,23 @@ export const useAuthStore = create<AuthStore>()(
        * Partial persistence configuration
        * Only persist essential data, not loading/error states
        */
-      partialize: (state) => ({
-        user: state.user,
-        session: state.session,
-        isAuthenticated: state.isAuthenticated,
-        isGuest: state.isGuest,
-        // Don't persist: isLoading, error
+      partialize: (state): AuthStore => ({
+        ...state,
+        // Reset these on page load
+        isLoading: false as boolean,
+        error: null as AuthError | null,
       }),
 
       /**
        * Custom merge function
        * Handles rehydration from localStorage
        */
-      merge: (persisted: Partial<AuthStore>, current: AuthStore) => ({
+      merge: (persisted: unknown, current: AuthStore): AuthStore => ({
         ...current,
-        ...persisted,
+        ...(persisted as Partial<AuthStore>),
         // Always start fresh with these values
-        isLoading: false,
-        error: null,
+        isLoading: false as boolean,
+        error: null as AuthError | null,
       }),
     }
   )

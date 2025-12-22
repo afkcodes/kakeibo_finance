@@ -140,13 +140,20 @@ const MultiCategorySelect = forwardRef<HTMLButtonElement, MultiCategorySelectPro
                           </span>
                         )}
                         <span className="truncate max-w-25">{cat.label}</span>
-                        <button
-                          type="button"
+                        <span
+                          role="button"
+                          tabIndex={0}
                           onClick={(e) => handleRemove(cat.value, e)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              handleRemove(cat.value, e);
+                            }
+                          }}
                           className="p-0.5 rounded hover:bg-surface-600 text-surface-400 hover:text-surface-200 cursor-pointer"
                         >
                           <X className="w-3 h-3" />
-                        </button>
+                        </span>
                       </span>
                     ))}
                     {selectedCategories.length > maxDisplay && (
