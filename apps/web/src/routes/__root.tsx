@@ -1,14 +1,14 @@
 import { createRootRoute, Link, Outlet, useLocation } from '@tanstack/react-router';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  ArrowRightLeft,
-  BarChart3,
-  LayoutDashboard,
-  PieChart,
-  PiggyBank,
-  Plus,
-  Target,
-  Wallet,
+    ArrowRightLeft,
+    BarChart3,
+    LayoutDashboard,
+    PieChart,
+    PiggyBank,
+    Plus,
+    Target,
+    Wallet,
 } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { AddAccountModal } from '../components/features/accounts/AddAccountModal';
@@ -44,6 +44,7 @@ function RootLayout() {
   const setActiveModal = useAppStore((state) => state.setActiveModal);
   const currentUser = useAppStore((state) => state.currentUser);
   const editingTransaction = useAppStore((state) => state.editingTransaction);
+  const editingBudget = useAppStore((state) => state.editingBudget);
 
   // Initialize database with default categories on first load
   // Empty dependency array ensures this only runs once on mount
@@ -160,6 +161,7 @@ function RootLayout() {
         isOpen={activeModal === 'add-budget'}
         onClose={() => setActiveModal(null)}
         userId={currentUser.id}
+        editingBudget={editingBudget ?? undefined}
       />
       <AddGoalModal />
       <AddAccountModal
