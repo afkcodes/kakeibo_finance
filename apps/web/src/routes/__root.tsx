@@ -16,6 +16,7 @@ import { AddBudgetModal } from '../components/features/budgets/AddBudgetModal';
 import { AddGoalModal } from '../components/features/goals/AddGoalModal';
 import { AddTransactionModal } from '../components/features/transactions/AddTransactionModal';
 import { useAuth } from '../hooks/useAuth';
+import { OfflineBanner } from '../hooks/useNetworkStatus';
 import { ensureDatabaseInitialized } from '../services/db/initializeDatabase';
 import { useAppStore } from '../store';
 
@@ -80,6 +81,9 @@ function RootLayout() {
 
   return (
     <div className="min-h-screen bg-surface-950">
+      {/* Offline Banner */}
+      <OfflineBanner />
+
       {/* Main Content */}
       <main className="px-4 py-4 pb-24">
         <div className="mx-auto max-w-7xl">
