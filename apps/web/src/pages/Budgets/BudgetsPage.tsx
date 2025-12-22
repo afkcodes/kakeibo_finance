@@ -2,6 +2,7 @@ import type { Budget, BudgetProgress, Category } from '@kakeibo/core';
 import { financialMonthEndDate } from '@kakeibo/core';
 import { AlertTriangle, MoreVertical, Pencil, PieChart, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { BudgetListSkeleton } from '../../components/common';
 import { CategoryIcon } from '../../components/ui';
 import { useBudgetActions, useBudgetProgress, useCategories, useCurrency } from '../../hooks';
 import { useAppStore } from '../../store/appStore';
@@ -205,7 +206,9 @@ export const BudgetsPage = () => {
       )}
 
       {/* Budget List */}
-      {budgetProgress.length === 0 ? (
+      {budgetProgress === undefined ? (
+        <BudgetListSkeleton count={4} />
+      ) : budgetProgress.length === 0 ? (
         <div className="text-center py-20">
           <div className="w-16 h-16 rounded-xl squircle bg-surface-800/50 flex items-center justify-center mx-auto mb-4">
             <PieChart className="w-7 h-7 text-surface-600" />
