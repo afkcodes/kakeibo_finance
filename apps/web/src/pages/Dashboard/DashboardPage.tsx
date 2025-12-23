@@ -1,39 +1,39 @@
 import type { Account, Transaction } from '@kakeibo/core';
 import {
-    financialMonthStartDate,
-    formatFinancialMonthRange,
-    formatRelativeTime,
-    getSubcategoryById,
+  financialMonthStartDate,
+  formatFinancialMonthRange,
+  formatRelativeTime,
+  getSubcategoryById,
 } from '@kakeibo/core';
 import { Link } from '@tanstack/react-router';
 import {
-    ArrowDownLeft,
-    ArrowUpRight,
-    ChevronDown,
-    ChevronRight,
-    CreditCard,
-    Eye,
-    EyeOff,
-    Layers,
-    Settings,
-    Sparkles,
-    Target,
-    TrendingDown,
-    TrendingUp,
-    Wallet,
+  ArrowDownLeft,
+  ArrowUpRight,
+  ChevronDown,
+  ChevronRight,
+  CreditCard,
+  Eye,
+  EyeOff,
+  Layers,
+  Settings,
+  Sparkles,
+  Target,
+  TrendingDown,
+  TrendingUp,
+  Wallet,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { TransactionCard } from '../../components/features/transactions';
 import { Button, CategoryIcon, Modal, ProgressBar } from '../../components/ui';
 import {
-    useAccounts,
-    useAuth,
-    useBudgetProgress,
-    useCategories,
-    useCurrency,
-    useGoalProgress,
-    useTransactionActions,
-    useTransactions,
+  useAccounts,
+  useAuth,
+  useBudgetProgress,
+  useCategories,
+  useCurrency,
+  useGoalProgress,
+  useTransactionActions,
+  useTransactions,
 } from '../../hooks';
 import { useAppStore } from '../../store/appStore';
 

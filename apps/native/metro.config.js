@@ -8,12 +8,23 @@ const path = require('node:path');
  *
  * @type {import('@react-native/metro-config').MetroConfig}
  */
+
+// Get the project root (monorepo root)
+const projectRoot = __dirname;
+const workspaceRoot = path.resolve(projectRoot, '../..');
+
 const config = {
+  projectRoot,
+  watchFolders: [workspaceRoot],
   resolver: {
     extraNodeModules: {
       '~': path.resolve(__dirname, 'src'),
-      '@kakeibo/core': path.resolve(__dirname, '../../packages/core/src'),
+      '@kakeibo/core': path.resolve(workspaceRoot, 'packages/core/src'),
     },
+    nodeModulesPaths: [
+      path.resolve(projectRoot, 'node_modules'),
+      path.resolve(workspaceRoot, 'node_modules'),
+    ],
   },
 };
 

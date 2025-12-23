@@ -1,12 +1,12 @@
 import { cn } from '@kakeibo/core';
 import {
-    ArrowLeftRight,
-    ArrowRight,
-    MoreVertical,
-    Pencil,
-    ShieldCheck,
-    Target,
-    Trash2,
+  ArrowLeftRight,
+  ArrowRight,
+  MoreVertical,
+  Pencil,
+  ShieldCheck,
+  Target,
+  Trash2,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { CategoryIcon } from '../../ui';
