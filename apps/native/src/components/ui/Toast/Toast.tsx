@@ -7,7 +7,7 @@
 
 import { AlertTriangle, CheckCircle, Info, XCircle } from 'lucide-react-native';
 import type React from 'react';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Animated, Text } from 'react-native';
 import type { ToastMessage } from './toast';
 
@@ -48,6 +48,16 @@ const colorMap = {
 export const Toast: React.FC<ToastProps> = ({ toast, onDismiss }) => {
   const slideAnim = useRef(new Animated.Value(-100)).current;
 
+  const handleDismiss = useCallback(() => {
+    Animated.timing(slideAnim, {
+      toValue: -100,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      onDismiss(toast.id);
+    });
+  }, [slideAnim, onDismiss, toast.id]);
+
   useEffect(() => {
     // Slide in
     Animated.spring(slideAnim, {
@@ -64,16 +74,6 @@ export const Toast: React.FC<ToastProps> = ({ toast, onDismiss }) => {
 
     return () => clearTimeout(timer);
   }, [handleDismiss, slideAnim, toast.duration]);
-
-  const handleDismiss = () => {
-    Animated.timing(slideAnim, {
-      toValue: -100,
-      duration: 200,
-      useNativeDriver: true,
-    }).start(() => {
-      onDismiss(toast.id);
-    });
-  };
 
   const Icon = iconMap[toast.type];
   const colors = colorMap[toast.type];

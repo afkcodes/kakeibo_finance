@@ -744,7 +744,7 @@ export class DexieAdapter implements IDatabaseAdapter {
 
   async exportDatabase(userId?: string): Promise<string> {
     // Get user's settings if userId provided
-    let settings;
+    let settings: User['settings'] | undefined;
     let users: User[] = [];
 
     if (userId) {

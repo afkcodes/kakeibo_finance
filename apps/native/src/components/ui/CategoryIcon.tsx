@@ -41,7 +41,7 @@ import {
   Landmark,
   Laptop,
   type LucideIcon,
-  Map,
+  Map as MapIcon,
   MoreHorizontal,
   Music,
   Palette,
@@ -121,7 +121,7 @@ const iconMap: Record<string, LucideIcon> = {
 
   // Travel
   plane: Plane,
-  map: Map,
+  map: MapIcon,
   briefcase: Briefcase,
 
   // Health

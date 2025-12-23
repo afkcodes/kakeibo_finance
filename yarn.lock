@@ -2884,7 +2884,6 @@ __metadata:
     "@react-native/metro-config": "npm:0.83.1"
     "@react-native/new-app-screen": "npm:0.83.1"
     "@react-native/typescript-config": "npm:0.83.1"
-    "@s77rt/react-native-date-picker": "npm:^3.1.1"
     "@types/jest": "npm:^29.5.13"
     "@types/react": "npm:^19.2.0"
     "@types/react-test-renderer": "npm:^19.1.0"
@@ -4202,16 +4201,6 @@ __metadata:
   version: 4.53.5
   resolution: "@rollup/rollup-win32-x64-msvc@npm:4.53.5"
   conditions: os=win32 & cpu=x64
-  languageName: node
-  linkType: hard
-
-"@s77rt/react-native-date-picker@npm:^3.1.1":
-  version: 3.1.1
-  resolution: "@s77rt/react-native-date-picker@npm:3.1.1"
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: 10c0/d5bc03d6fc661826f41088bfc157e20714ad8f3830f774f867847f338b5b2e81e5d5aa8738e7895134a8cd0b6b77df7debdb9dfcf4aa2b43b01ed0ad2683850c
   languageName: node
   linkType: hard
 

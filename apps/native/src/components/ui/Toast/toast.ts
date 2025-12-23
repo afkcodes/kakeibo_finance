@@ -33,7 +33,9 @@ class ToastManager {
       message,
       duration,
     };
-    this.listeners.forEach((listener) => listener(toast));
+    this.listeners.forEach((listener) => {
+      listener(toast);
+    });
   }
 
   success(message: string, duration?: number) {

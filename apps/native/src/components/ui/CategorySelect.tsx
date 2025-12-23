@@ -244,93 +244,79 @@ export const CategorySelect = ({
     return selectedOption.label;
   };
 
-  const renderItem: ListRenderItem<FlatItem> = ({ item }) => {
-    if (item.type === 'category') {
-      const { category, subcategories: subs } = item;
-      const isExpanded = expandedCategories.has(category.value);
-      const isSelected = value === category.value && !subcategoryValue;
-      const hasSubs = subs.length > 0;
-
-      return (
-        <View className="px-2">
-          <Pressable
-            className={`flex-row items-center px-2 py-3 rounded-lg ${
-              isSelected ? 'bg-primary-500/10' : 'active:bg-surface-700/30'
-            }`}
-            onPress={() => {
-              if (hasSubs) {
-                toggleExpand(category.value);
-              } else {
-                handleSelectCategory(category);
-              }
-            }}
-          >
-            {/* Expand icon */}
-            {hasSubs && (
-              <View className="mr-2">
-                {isExpanded ? (
-                  <ChevronDown size={16} color="#94a3b8" />
-                ) : (
-                  <ChevronRight size={16} color="#94a3b8" />
-                )}
-              </View>
-            )}
-
-            {/* Category icon */}
-            <View className="mr-3">
-              <CategoryIcon
-                icon={category.icon || 'tag'}
-                color={category.color || '#94a3b8'}
-                size="md"
-              />
-            </View>
-
-            {/* Category name */}
-            <Text
-              className={`flex-1 text-[15px] ${
-                isSelected ? 'text-primary-400 font-semibold' : 'text-surface-100'
-              }`}
-            >
-              {category.label}
-            </Text>
-
-            {/* Select button for categories with subcategories */}
-            {hasSubs && (
-              <Pressable
-                className="ml-2 px-3 py-1 bg-surface-700 rounded-lg active:bg-surface-600"
-                onPress={() => handleSelectCategory(category)}
-              >
-                <Text className="text-surface-300 text-xs">Select</Text>
-              </Pressable>
-            )}
-          </Pressable>
-        </View>
-      );
-    }
-
-    // Subcategory item
-    const { category, subcategory } = item;
-    const isSelected = value === category.value && subcategoryValue === subcategory.id;
+  // Render category row
+  const renderCategoryItem = (category: CategoryOption, subs: Subcategory[]) => {
+    const isExpanded = expandedCategories.has(category.value);
+    const isSelected = value === category.value && !subcategoryValue;
+    const hasSubs = subs.length > 0;
 
     return (
       <View className="px-2">
         <Pressable
-          className={`flex-row items-center pl-10 pr-2 py-2.5 rounded-lg ${
+          className={`flex-row items-center px-2 py-3 rounded-lg ${
             isSelected ? 'bg-primary-500/10' : 'active:bg-surface-700/30'
           }`}
+          onPress={() => (hasSubs ? toggleExpand(category.value) : handleSelectCategory(category))}
+        >
+          {hasSubs && (
+            <View className="mr-2">
+              {isExpanded ? (
+                <ChevronDown size={16} color="#94a3b8" />
+              ) : (
+                <ChevronRight size={16} color="#94a3b8" />
+              )}
+            </View>
+          )}
+          <View className="mr-3">
+            <CategoryIcon
+              icon={category.icon || 'tag'}
+              color={category.color || '#94a3b8'}
+              size="md"
+            />
+          </View>
+          <Text
+            className={`flex-1 text-[15px] ${isSelected ? 'text-primary-400 font-semibold' : 'text-surface-100'}`}
+          >
+            {category.label}
+          </Text>
+          {hasSubs && (
+            <Pressable
+              className="ml-2 px-3 py-1 bg-surface-700 rounded-lg active:bg-surface-600"
+              onPress={() => handleSelectCategory(category)}
+            >
+              <Text className="text-surface-300 text-xs">Select</Text>
+            </Pressable>
+          )}
+        </Pressable>
+      </View>
+    );
+  };
+
+  // Render subcategory row
+  const renderSubcategoryItem = (category: CategoryOption, subcategory: Subcategory) => {
+    const isSelected = value === category.value && subcategoryValue === subcategory.id;
+    return (
+      <View className="px-2">
+        <Pressable
+          className={`flex-row items-center pl-10 pr-2 py-2.5 rounded-lg ${isSelected ? 'bg-primary-500/10' : 'active:bg-surface-700/30'}`}
           onPress={() => handleSelectSubcategory(category, subcategory)}
         >
           <View className="w-1.5 h-1.5 rounded-full bg-surface-500 mr-3" />
           <Text
-            className={`flex-1 text-[14px] ${
-              isSelected ? 'text-primary-400 font-semibold' : 'text-surface-300'
-            }`}
+            className={`flex-1 text-[14px] ${isSelected ? 'text-primary-400 font-semibold' : 'text-surface-300'}`}
           >
             {subcategory.name}
           </Text>
         </Pressable>
       </View>
     );
+  };
+
+  const renderItem: ListRenderItem<FlatItem> = ({ item }) => {
+    if (item.type === 'category') {
+      return renderCategoryItem(item.category, item.subcategories);
+    }
+    return renderSubcategoryItem(item.category, item.subcategory);
   };
 
   return (

@@ -36,6 +36,94 @@ export interface TransactionCardProps {
   variant?: 'default' | 'compact';
 }
 
+// Helper: Render transaction icon
+const TransactionIcon = ({
+  type,
+  category,
+  isCompact,
+}: {
+  type: string;
+  category?: { icon?: string; color?: string };
+  isCompact: boolean;
+}) => {
+  const isGoalContribution = type === 'goal-contribution';
+  const isGoalWithdrawal = type === 'goal-withdrawal';
+  const isGoalTransaction = isGoalContribution || isGoalWithdrawal;
+  const isTransfer = type === 'transfer';
+
+  if (isGoalTransaction) {
+    return (
+      <Target
+        className={cn(
+          isGoalContribution ? 'text-primary-400' : 'text-warning-400',
+          isCompact ? 'w-5 h-5' : 'w-6 h-6'
+        )}
+      />
+    );
+  }
+
+  if (isTransfer) {
+    return <ArrowLeftRight className={cn('text-surface-300', isCompact ? 'w-5 h-5' : 'w-6 h-6')} />;
+  }
+
+  return (
+    <CategoryIcon
+      icon={category?.icon || 'circle-help'}
+      color={category?.color || '#5B6EF5'}
+      size={isCompact ? 'sm' : 'md'}
+    />
+  );
+};
+
+// Helper: Render category/goal info
+const CategoryInfo = ({
+  type,
+  goalName,
+  accountName,
+  toAccountName,
+  category,
+  subcategory,
+}: {
+  type: string;
+  goalName?: string;
+  accountName?: string;
+  toAccountName?: string;
+  category?: { name: string };
+  subcategory?: { name: string };
+  isCompact: boolean;
+}) => {
+  const isGoalContribution = type === 'goal-contribution';
+  const isGoalWithdrawal = type === 'goal-withdrawal';
+  const isGoalTransaction = isGoalContribution || isGoalWithdrawal;
+  const isTransfer = type === 'transfer';
+
+  if (isGoalTransaction) {
+    return (
+      <>
+        <Target className="w-3.5 h-3.5 text-surface-500 shrink-0" />
+        <span className="text-surface-400 text-[12px]">{goalName}</span>
+      </>
+    );
+  }
+
+  if (isTransfer) {
+    return (
+      <>
+        <span className="text-surface-400 text-[12px]">{accountName}</span>
+        <ArrowRight className="w-3 h-3 text-surface-500" />
+        <span className="text-surface-400 text-[12px]">{toAccountName}</span>
+      </>
+    );
+  }
+
+  return (
+    <span className="text-surface-400 text-[12px] truncate">
+      {category?.name}
+      {subcategory && ` • ${subcategory.name}`}
+    </span>
+  );
+};
+
 export const TransactionCard = ({
   description,
   amount,
@@ -59,10 +147,8 @@ export const TransactionCard = ({
 
   const isExpense = type === 'expense';
   const isIncome = type === 'income';
-  const isTransfer = type === 'transfer';
   const isGoalContribution = type === 'goal-contribution';
   const isGoalWithdrawal = type === 'goal-withdrawal';
-  const isGoalTransaction = isGoalContribution || isGoalWithdrawal;
   const isCompact = variant === 'compact';
 
   // Close menu when clicking outside
@@ -137,22 +223,7 @@ export const TransactionCard = ({
             backgroundColor: `${category?.color || '#5B6EF5'}18`,
           }}
         >
-          {isGoalTransaction ? (
-            <Target
-              className={cn(
-                isGoalContribution ? 'text-primary-400' : 'text-warning-400',
-                isCompact ? 'w-5 h-5' : 'w-6 h-6'
-              )}
-            />
-          ) : isTransfer ? (
-            <ArrowLeftRight className={cn('text-surface-300', isCompact ? 'w-5 h-5' : 'w-6 h-6')} />
-          ) : (
-            <CategoryIcon
-              icon={category?.icon || 'circle-help'}
-              color={category?.color || '#5B6EF5'}
-              size={isCompact ? 'sm' : 'md'}
-            />
-          )}
+          <TransactionIcon type={type} category={category} isCompact={isCompact} />
         </div>
 
         {/* Content */}
@@ -174,23 +245,15 @@ export const TransactionCard = ({
 
               {/* Category/Goal Info */}
               <div className={cn('flex items-center gap-1.5', isCompact ? 'mt-0.5' : 'mt-1')}>
-                {isGoalTransaction ? (
-                  <>
-                    <Target className="w-3.5 h-3.5 text-surface-500 shrink-0" />
-                    <span className="text-surface-400 text-[12px]">{goalName}</span>
-                  </>
-                ) : isTransfer ? (
-                  <>
-                    <span className="text-surface-400 text-[12px]">{accountName}</span>
-                    <ArrowRight className="w-3 h-3 text-surface-500" />
-                    <span className="text-surface-400 text-[12px]">{toAccountName}</span>
-                  </>
-                ) : (
-                  <span className="text-surface-400 text-[12px] truncate">
-                    {category?.name}
-                    {subcategory && ` • ${subcategory.name}`}
-                  </span>
-                )}
+                <CategoryInfo
+                  type={type}
+                  goalName={goalName}
+                  accountName={accountName}
+                  toAccountName={toAccountName}
+                  category={category}
+                  subcategory={subcategory}
+                  isCompact={isCompact}
+                />
               </div>
             </div>
 
