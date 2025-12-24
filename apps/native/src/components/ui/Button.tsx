@@ -1,78 +1,87 @@
 /**
- * @fileoverview Button component with UniWind styling
+ * @fileoverview Button component with Squircle styling
  * @module @kakeibo/native/components/ui
  *
  * Reusable button component with multiple variants, sizes, and states.
- * Uses HeroUI Native Button as base with custom variants.
+ * Uses SquircleView for premium iOS-style rounded corners.
  */
 
-import { tv, type VariantProps } from '@kakeibo/core';
 import type React from 'react';
-import { ActivityIndicator, Pressable, type PressableProps, Text } from 'react-native';
+import { ActivityIndicator, Pressable, type PressableProps, View } from 'react-native';
+import { SquircleView } from './SquircleView';
 
-const buttonVariants = tv({
-  base: 'rounded-xl flex-row items-center justify-center',
-  variants: {
-    variant: {
-      primary: 'bg-primary-500 active:bg-primary-600',
-      secondary: 'bg-surface-700 active:bg-surface-600',
-      danger: 'bg-danger-500 active:bg-danger-600',
-      success: 'bg-success-500 active:bg-success-600',
-      ghost: 'bg-transparent active:bg-surface-800/50',
-      outline: 'bg-transparent border border-surface-600 active:bg-surface-800/30',
-    },
-    size: {
-      sm: 'px-3 py-2 min-h-8',
-      md: 'px-4 py-3 min-h-11',
-      lg: 'px-6 py-4 min-h-13',
-    },
-    fullWidth: {
-      true: 'w-full',
-      false: 'self-start',
-    },
+// Color mappings for variants (can't use Tailwind with Squircle)
+const variantColors = {
+  primary: {
+    background: '#5b6ef5',
+    backgroundPressed: '#4c5dd6',
+    border: 'transparent',
   },
-  defaultVariants: {
-    variant: 'primary',
-    size: 'md',
-    fullWidth: false,
+  secondary: {
+    background: '#3f3f46',
+    backgroundPressed: '#52525b',
+    border: 'transparent',
   },
-});
+  danger: {
+    background: '#ef4444',
+    backgroundPressed: '#dc2626',
+    border: 'transparent',
+  },
+  success: {
+    background: '#22c55e',
+    backgroundPressed: '#16a34a',
+    border: 'transparent',
+  },
+  ghost: {
+    background: 'transparent',
+    backgroundPressed: 'rgba(24, 24, 27, 0.5)',
+    border: 'transparent',
+  },
+  outline: {
+    background: 'rgba(24, 24, 27, 0.8)',
+    backgroundPressed: 'rgba(24, 24, 27, 0.6)',
+    border: '#3f3f46',
+  },
+};
 
-const textVariants = tv({
-  base: '',
-  variants: {
-    variant: {
-      primary: 'text-white',
-      secondary: 'text-surface-100',
-      danger: 'text-white',
-      success: 'text-white',
-      ghost: 'text-primary-400',
-      outline: 'text-surface-100',
-    },
-    size: {
-      sm: 'text-sm font-medium',
-      md: 'text-base font-semibold',
-      lg: 'text-lg font-bold',
-    },
+// Size mappings
+const sizeStyles = {
+  sm: {
+    height: 32,
+    paddingHorizontal: 12,
+    borderRadius: 10,
   },
-  defaultVariants: {
-    variant: 'primary',
-    size: 'md',
+  md: {
+    height: 44,
+    paddingHorizontal: 16,
+    borderRadius: 12,
   },
-});
+  lg: {
+    height: 56,
+    paddingHorizontal: 24,
+    borderRadius: 14,
+  },
+};
 
-export interface ButtonProps
-  extends Omit<PressableProps, 'children'>,
-    VariantProps<typeof buttonVariants> {
+export interface ButtonProps extends Omit<PressableProps, 'children'> {
   /** Button content */
   children: React.ReactNode;
+
+  /** Button variant */
+  variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'ghost' | 'outline';
+
+  /** Button size */
+  size?: 'sm' | 'md' | 'lg';
+
+  /** Full width */
+  fullWidth?: boolean;
 
   /** Loading state (shows spinner) */
   loading?: boolean;
 }
 
 /**
- * Button component
+ * Button component with Squircle styling
  *
  * @example
  * <Button variant="primary" size="md" onPress={handlePress}>
@@ -86,33 +95,44 @@ export interface ButtonProps
  */
 export const Button: React.FC<ButtonProps> = ({
   children,
-  variant,
-  size,
+  variant = 'primary',
+  size = 'md',
   disabled = false,
   loading = false,
-  fullWidth,
+  fullWidth = false,
   ...props
 }) => {
   const isDisabled = disabled || loading;
-  const buttonClass = buttonVariants({ variant, size, fullWidth });
-  const textClass = textVariants({ variant, size });
+  const colors = variantColors[variant];
+  const sizeStyle = sizeStyles[size];
 
   return (
-    <Pressable
-      className={`${buttonClass} ${isDisabled ? 'opacity-50' : ''}`}
-      disabled={isDisabled}
-      {...props}
-    >
-      {loading && (
-        <ActivityIndicator
-          size="small"
-          color={variant === 'ghost' || variant === 'outline' ? '#5B6EF5' : '#ffffff'}
-          style={{ marginRight: 8 }}
-        />
+    <Pressable disabled={isDisabled} style={{ opacity: isDisabled ? 0.5 : 1 }} {...props}>
+      {({ pressed }) => (
+        <SquircleView
+          backgroundColor={pressed ? colors.backgroundPressed : colors.background}
+          borderRadius={sizeStyle.borderRadius}
+          borderWidth={variant === 'outline' ? 1 : 0}
+          borderColor={colors.border}
+          style={{
+            height: sizeStyle.height,
+            paddingHorizontal: sizeStyle.paddingHorizontal,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: fullWidth ? '100%' : undefined,
+          }}
+        >
+          {loading && (
+            <ActivityIndicator
+              size="small"
+              color={variant === 'ghost' || variant === 'outline' ? '#5B6EF5' : '#ffffff'}
+              style={{ marginRight: 8 }}
+            />
+          )}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>{children}</View>
+        </SquircleView>
       )}
-      <Text className={textClass}>{children}</Text>
     </Pressable>
   );
 };
-
-export { buttonVariants };

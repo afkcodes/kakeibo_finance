@@ -1,25 +1,20 @@
 /**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
+ * Kakeibo v2 - Native App Entry Point
  * @format
  */
 
 import { StatusBar, useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
 import './src/global.css';
-import { HeroUITestScreen } from './src/screens/ComponentShowcase';
+import { MainNavigator } from './src/navigation';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-        <HeroUITestScreen />
-      </SafeAreaProvider>
+      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+      <MainNavigator />
     </GestureHandlerRootView>
   );
 }

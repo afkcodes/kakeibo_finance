@@ -16,7 +16,12 @@ const workspaceRoot = path.resolve(projectRoot, '../..');
 const config = {
   projectRoot,
   watchFolders: [workspaceRoot],
+  transformer: {
+    babelTransformerPath: require.resolve('react-native-svg-transformer'),
+  },
   resolver: {
+    assetExts: getDefaultConfig(__dirname).resolver.assetExts.filter((ext) => ext !== 'svg'),
+    sourceExts: [...getDefaultConfig(__dirname).resolver.sourceExts, 'svg'],
     extraNodeModules: {
       '~': path.resolve(__dirname, 'src'),
       '@kakeibo/core': path.resolve(workspaceRoot, 'packages/core/src'),

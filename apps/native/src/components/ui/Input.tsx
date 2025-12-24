@@ -9,12 +9,13 @@
 import { tv } from '@kakeibo/core';
 import type React from 'react';
 import { Text, TextInput, type TextInputProps, View } from 'react-native';
+import Squircle from 'react-native-fast-squircle';
 
 const inputVariants = tv({
   slots: {
     container: 'w-full',
     label: 'text-surface-200 text-sm font-medium mb-1',
-    input: 'bg-surface-800/60 border rounded-lg px-3 py-2.5 text-surface-100 text-base',
+    input: 'bg-surface-800/60 border px-3 py-2.5 text-surface-100 text-base',
     helperText: 'text-surface-400 text-xs mt-1',
     errorText: 'text-danger-400 text-xs mt-1',
   },
@@ -87,12 +88,17 @@ export const Input: React.FC<InputProps> = ({
   return (
     <View className={styles.container()}>
       {label && <Text className={styles.label()}>{label}</Text>}
-      <TextInput
-        className={styles.input()}
-        placeholderTextColor="#64748b"
-        editable={!disabled}
-        {...props}
-      />
+      <Squircle
+        cornerSmoothing={1}
+        style={{ backgroundColor: 'rgba(39, 39, 42, 0.6)', borderRadius: 12 }}
+      >
+        <TextInput
+          className={styles.input()}
+          placeholderTextColor="#737373"
+          editable={!disabled}
+          {...props}
+        />
+      </Squircle>
       {error && <Text className={styles.errorText()}>{error}</Text>}
       {!error && helperText && <Text className={styles.helperText()}>{helperText}</Text>}
     </View>

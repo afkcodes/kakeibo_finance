@@ -8,10 +8,11 @@
 
 import { tv, type VariantProps } from '@kakeibo/core';
 import type React from 'react';
-import { Pressable, type PressableProps, View, type ViewProps } from 'react-native';
+import { Pressable, type PressableProps, type ViewProps } from 'react-native';
+import Squircle from 'react-native-fast-squircle';
 
 const cardVariants = tv({
-  base: 'rounded-xl bg-surface-900 border border-surface-800',
+  base: 'bg-surface-900 border border-surface-800',
   variants: {
     variant: {
       default: '',
@@ -64,20 +65,27 @@ export const Card: React.FC<CardProps> = ({
 
   if (onPress) {
     return (
-      <Pressable
-        className={`${cardClass} active:opacity-80`}
-        onPress={onPress}
-        {...(props as PressableProps)}
-      >
-        {children}
+      <Pressable onPress={onPress} {...(props as PressableProps)}>
+        <Squircle
+          cornerSmoothing={1}
+          style={{ backgroundColor: '#18181b', borderRadius: 16 }}
+          className={`${cardClass} active:opacity-80`}
+        >
+          {children}
+        </Squircle>
       </Pressable>
     );
   }
 
   return (
-    <View className={cardClass} {...props}>
+    <Squircle
+      cornerSmoothing={1}
+      style={{ backgroundColor: '#18181b', borderRadius: 16 }}
+      className={cardClass}
+      {...props}
+    >
       {children}
-    </View>
+    </Squircle>
   );
 };
 
