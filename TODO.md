@@ -1,6 +1,6 @@
 # Kakeibo Monorepo Migration - Detailed TODO
 
-> **Status**: ✅ Phase 3E Complete - Authentication System Implemented!
+> **Status**: ✅ Phase 3F Complete - Error Handling System Implemented!
 > **Last Updated**: December 22, 2024  
 > **Goal**: Migrate all features from `kakeibo` to `kakeibo-v2` monorepo with proper separation of concerns
 > 
@@ -93,6 +93,17 @@
   - [x] Guest-to-authenticated data migration
   - [ ] Apple OAuth provider
   - [ ] GitHub OAuth provider
+- [x] Phase 3F: Error Handling & User Feedback - `apps/web/src/components/` (9/10) ✅
+  - [x] Global ErrorBoundary component with fallback UI
+  - [x] Skeleton loaders for all list views (TransactionList, BudgetList, GoalList, AccountList)
+  - [x] Loading states on all async operations
+  - [x] Confirmation modals for all delete operations (5 pages)
+  - [x] Form validation with React Hook Form + Zod
+  - [x] Network error handling with useNetworkStatus + OfflineBanner
+  - [x] Database error handling with user-friendly messages
+  - [x] Retry logic for failed operations (exponential backoff)
+  - [x] Empty states for all list views
+  - [ ] Error logging service (optional - Sentry integration)
   - [x] Analytics page ✅ (Complete with Recharts integration)
   - [x] Goals page ✅ (Complete with contribution/withdrawal)
   - [x] Accounts page ✅ (Complete with net worth tracking)
@@ -100,15 +111,15 @@
   - [x] Welcome page ✅ (Complete with onboarding)
 
 ### **Native Platform Only** 📱
-- [ ] Phase 4A: Native Database - `apps/native/src/services/db/` (0/6)
-- [ ] Phase 4B: Native UI Components - `apps/native/src/components/` (0/14)
+- [x] Phase 4A: Native Database - `apps/native/src/services/db/` (6/6) ✅
+- [x] Phase 4B: Native UI Components - `apps/native/src/components/` (14/14) ✅
 - [ ] Phase 4C: Native Screens & Features - `apps/native/src/screens/` (0/11)
 
 ### **Quality & Deployment** ✅
 - [ ] Phase 5: Testing & Quality Assurance (0/15)
 - [ ] Phase 6: Documentation & CI/CD (0/9)
 
-**Total Tasks**: 114/167 completed (68.3%)
+**Total Tasks**: 123/177 completed (69.5%)
 
 ---
 
@@ -255,6 +266,24 @@
 - ✅ Back button in subcategory view
 - ✅ Financial month calculations (respects settings)
 - ✅ Recharts integration complete
+
+**Error Handling & User Feedback (Phase 3F - Dec 22, 2024):**
+- ✅ Created ErrorBoundary component with fallback UI and reset functionality
+- ✅ Created SkeletonLoaders for all list views (TransactionList, BudgetList, GoalList, AccountList)
+- ✅ Added loading states to all pages (Dashboard, Transactions, Budgets, Goals, Accounts)
+- ✅ Added confirmation modals to all delete operations
+  - ✅ TransactionsPage: Delete transaction confirmation
+  - ✅ BudgetsPage: Delete budget confirmation (refactored from inline to modal)
+  - ✅ GoalsPage: Delete goal confirmation
+  - ✅ AccountsPage: Delete account confirmation
+  - ✅ DashboardPage: Delete transaction confirmation
+- ✅ Created useNetworkStatus hook with offline detection and slow connection monitoring
+- ✅ Created OfflineBanner component for network status display
+- ✅ Created databaseErrorHandler utility with retry logic (exponential backoff)
+- ✅ Form validation handled by React Hook Form + Zod (no additional work needed)
+- ✅ Fixed TransactionCard menu button visibility (now shows when only delete available)
+- ✅ Fixed MultiCategorySelect nested button hydration error (changed to span with role="button")
+- ✅ Removed unused zodHelpers file (React Hook Form handles this natively)
 
 ### Next Steps
 
@@ -879,35 +908,81 @@
 
 ---
 
-## 🎨 Phase 4B: Native UI Components
+## 🎨 Phase 4B: Native UI Components ✅ COMPLETE
 **Location**: `apps/native/src/components/`
-**Purpose**: React Native components using NativeWind + React Native primitives
+**Purpose**: React Native components using UniWind + React Native primitives
+**Completed**: December 22, 2024
 
-### 4B.1 Native Base Components (0/10)
-- [ ] Create `apps/native/src/components/ui/Button/Button.tsx`
-  - [ ] Use React Native Pressable
-  - [ ] Implement ButtonProps from core
-  - [ ] Apply NativeWind styles
-- [ ] Create `apps/native/src/components/ui/Input/Input.tsx`
-- [ ] Create `apps/native/src/components/ui/Modal/Modal.tsx`
-  - [ ] Use React Native Modal
-  - [ ] Animated transitions
-- [ ] Create `apps/native/src/components/ui/Card/Card.tsx`
-- [ ] Create `apps/native/src/components/ui/Badge/Badge.tsx`
-- [ ] Create `apps/native/src/components/ui/Checkbox/Checkbox.tsx`
-- [ ] Create `apps/native/src/components/ui/ProgressBar/ProgressBar.tsx`
-- [ ] Create `apps/native/src/components/ui/CategoryIcon/CategoryIcon.tsx`
-  - [ ] Map Lucide icons to React Native icons
-- [ ] Create `apps/native/src/components/ui/Select/Select.tsx`
-  - [ ] Use React Native Picker or custom bottom sheet
-- [ ] Create barrel export `apps/native/src/components/ui/index.ts`
+### 4B.1 Native Base Components (14/14) ✅
+- [x] Create `apps/native/src/components/ui/Button.tsx`
+  - [x] Use React Native Pressable
+  - [x] 6 variants (primary, secondary, danger, success, ghost, outline)
+  - [x] UniWind styling with tailwind-variants
+  - [x] Loading state with ActivityIndicator
+- [x] Create `apps/native/src/components/ui/Input.tsx`
+  - [x] TextInput with label, error, helper text slots
+  - [x] Error state styling
+- [x] Create `apps/native/src/components/ui/Modal.tsx`
+  - [x] React Native Modal with backdrop
+  - [x] Custom header with close button
+  - [x] ScrollView content area
+  - [x] Optional footer slot
+- [x] Create `apps/native/src/components/ui/Card.tsx`
+  - [x] 3 variants (default, elevated, outlined)
+  - [x] 4 padding sizes
+  - [x] Pressable support
+- [x] Create `apps/native/src/components/ui/Badge.tsx`
+  - [x] 5 color variants
+  - [x] 3 sizes
+- [x] Create `apps/native/src/components/ui/Checkbox.tsx`
+  - [x] Pressable + View implementation
+  - [x] Check icon from lucide-react-native
+- [x] Create `apps/native/src/components/ui/ProgressBar.tsx`
+  - [x] 4 colors, 3 sizes
+  - [x] Percentage display
+- [x] Create `apps/native/src/components/ui/CategoryIcon.tsx`
+  - [x] 70+ Lucide icons mapped
+  - [x] Dynamic icon rendering
+- [x] Create `apps/native/src/components/ui/Select.tsx`
+  - [x] Bottom sheet pattern using Modal
+  - [x] Check icon for selected option
+- [x] Create `apps/native/src/components/ui/DatePicker.tsx`
+  - [x] Platform-specific (iOS modal, Android native)
+  - [x] @react-native-community/datetimepicker integration
+- [x] Create `apps/native/src/components/ui/Chip.tsx`
+  - [x] 5 variants, 3 sizes
+  - [x] Optional close button
+  - [x] Pressable support
+- [x] Create `apps/native/src/components/ui/SkeletonLoader.tsx`
+  - [x] Shimmer animation using Animated API
+  - [x] 3 variants (text, card, list)
+- [x] Create `apps/native/src/components/ui/Toast/`
+  - [x] toast.ts - ToastManager with pub/sub pattern
+  - [x] Toast.tsx - Individual toast with animations
+  - [x] ToastContainer.tsx - Renders all active toasts
+  - [x] Pill-shaped minimal design matching web
+- [x] Create `apps/native/src/components/common/EmptyState.tsx`
+  - [x] Icon, title, description layout
+  - [x] Optional action button
+- [x] Create `apps/native/src/screens/ComponentShowcase.tsx`
+  - [x] Demo all UI components
+  - [x] Interactive examples
+- [x] Create barrel export `apps/native/src/components/ui/index.ts`
 
-### 4B.2 Native Feature Components (0/4)
+### Key Implementation Details
+- ✅ NO third-party UI libraries (removed HeroUI Native completely)
+- ✅ Pure React Native primitives (Pressable, View, Text, TextInput, Modal)
+- ✅ UniWind 1.2.2 for Tailwind-like styling
+- ✅ tailwind-variants (tv()) for variant management
+- ✅ Dark theme colors from @kakeibo/core
+- ✅ lucide-react-native 0.562.0 for icons
+- ✅ All components fully typed with TypeScript
+
+### 4B.2 Native Feature Components (0/4) - MOVED TO PHASE 4C
 - [ ] Create `apps/native/src/components/features/transactions/TransactionCard.tsx`
 - [ ] Create `apps/native/src/components/features/transactions/AddTransactionModal.tsx`
 - [ ] Create `apps/native/src/components/features/budgets/AddBudgetModal.tsx`
 - [ ] Create `apps/native/src/components/features/goals/AddGoalModal.tsx`
-  - [ ] ⚠️ All use React Native Modal, not web portal
 
 ---
 

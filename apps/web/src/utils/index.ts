@@ -3,9 +3,6 @@
  * @module @kakeibo/web/utils
  */
 
-export type { Toast, ToastPayload, ToastVariant } from './toast';
-export { subscribe, toast, toastHelpers } from './toast';
-
 // Database error handling
 export {
   checkStorageQuota,
@@ -13,3 +10,5 @@ export {
   warnIfStorageLow,
   withDatabaseErrorHandling,
 } from './databaseErrorHandler';
+export type { Toast, ToastPayload, ToastVariant } from './toast';
+export { subscribe, toast, toastHelpers } from './toast';

@@ -31,5 +31,9 @@ export * from './generators';
 
 // Toast notification interface
 export * from './toast';
+
+// Transaction utilities
+export * from './transactionHelpers';
+
 // Validation utilities
 export * from './validators';

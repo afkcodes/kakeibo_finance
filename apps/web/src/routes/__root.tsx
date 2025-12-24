@@ -1,14 +1,14 @@
 import { createRootRoute, Link, Outlet, useLocation } from '@tanstack/react-router';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-    ArrowRightLeft,
-    BarChart3,
-    LayoutDashboard,
-    PieChart,
-    PiggyBank,
-    Plus,
-    Target,
-    Wallet,
+  ArrowRightLeft,
+  BarChart3,
+  LayoutDashboard,
+  PieChart,
+  PiggyBank,
+  Plus,
+  Target,
+  Wallet,
 } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { AddAccountModal } from '../components/features/accounts/AddAccountModal';
