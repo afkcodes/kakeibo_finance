@@ -18,6 +18,9 @@ export type AccountType = 'bank' | 'credit' | 'cash' | 'investment' | 'wallet';
  *
  * Accounts are the containers for transactions. Users can have multiple
  * accounts and track balances across all of them.
+ *
+ * IMPORTANT: Balance is calculated from initialBalance + all transactions.
+ * Never update balance directly - always create transactions.
  */
 export interface Account {
   /** Unique identifier */
@@ -32,7 +35,16 @@ export interface Account {
   /** Type of account */
   type: AccountType;
 
-  /** Current balance (automatically calculated from transactions) */
+  /**
+   * Initial balance when account was created/started being tracked
+   * This is the starting point for balance calculations
+   */
+  initialBalance: number;
+
+  /**
+   * Current balance (calculated from initialBalance + all transactions)
+   * This is computed on-the-fly, not stored/updated directly
+   */
   balance: number;
 
   /** Currency code (e.g., "USD", "EUR", "INR") */

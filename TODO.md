@@ -1,7 +1,7 @@
 # Kakeibo Monorepo Migration - Detailed TODO
 
-> **Status**: ✅ Phase 3F Complete - Error Handling System Implemented!
-> **Last Updated**: December 22, 2024  
+> **Status**: ✅ Phase 4C Complete - Native Feature Components Implemented!
+> **Last Updated**: December 25, 2024  
 > **Goal**: Migrate all features from `kakeibo` to `kakeibo-v2` monorepo with proper separation of concerns
 > 
 > ⚠️ **IMPORTANT**: Update this file after EVERY completed task:
@@ -15,6 +15,31 @@
 ## 🚧 Placeholder Implementations (To Revisit Later)
 
 > **Note**: These features have basic placeholder implementations and need to be completed later
+
+### Pure Calculated Balance (Dec 25, 2024)
+- ✅ **Architecture Decision** - Moved from incremental to pure calculated balances
+  - ✅ Added `initialBalance` field to Account type and schema
+  - ✅ Created `calculateAccountBalance()` utility in @kakeibo/core
+  - ✅ Updated SQLiteAdapter (removed all balance update methods)
+  - ✅ Transaction operations only modify transactions table
+  - ✅ Balance recalculated on every query (self-healing)
+  - ✅ Simplified deleteGoal (just deletes transactions)
+  - ✅ Added `balance-adjustment` transaction type
+  - ✅ **Status**: Native only (web deferred)
+  - ⚠️ **TODO**: Add migration script for existing users
+  - ⚠️ **TODO**: Implement for web platform (DexieAdapter)
+
+### Subscription Tracking Feature
+- ✅ **Feature Design Document** (`SUBSCRIPTION_TRACKING_FEATURE.md`) - CREATED Dec 25, 2024
+  - ✅ Complete data model & schema design
+  - ✅ Database integration architecture
+  - ✅ Auto-transaction creation flows
+  - ✅ Budget/Account/Category integration
+  - ✅ UI mockups and component structure
+  - ✅ 3-phase development roadmap (MVP → Automation → Advanced)
+  - ⚠️ TODO: Implement Phase 1 (MVP) - subscription CRUD, basic UI
+  - ⚠️ TODO: Implement Phase 2 - auto-transactions, reminders, analytics
+  - ⚠️ TODO: Implement Phase 3 - service icons, duplicate detection, price alerts
 
 ### Authentication & User Management
 - ✅ **useAuth hook** (`apps/web/src/hooks/useAuth.ts`) - COMPLETED Dec 21, 2024
@@ -39,11 +64,20 @@
   - ✅ Date conversion handling for imported data
 
 ### Native Platform
-- ⚠️ **React Native Implementation** (Not started)
-  - TODO: SQLiteAdapter for OP-SQLite
-  - TODO: Native UI components
+- ✅ **Phase 4A-4E COMPLETE** (Dec 25, 2024)
+  - ✅ SQLiteAdapter fully implemented (OP-SQLite v15.1.14)
+  - ✅ Pure calculated balance architecture (native only)
+  - ✅ All UI components (45 components)
+  - ✅ All feature components (35 components)
+  - ✅ All entity hooks with Zustand invalidation
+  - ✅ MMKV storage integration (v4 API)
+  - ✅ Navigation system with React Navigation
+- ⚠️ **Phase 4F: Screens** (In progress - 8/42)
+  - TODO: Complete remaining 34 screens
+- ⚠️ **Phase 4G: Advanced Features** (Not started - 0/19)
   - TODO: Biometric authentication
   - TODO: Local notifications
+  - TODO: Supabase OAuth for React Native
 
 ---
 

@@ -4,3 +4,4 @@
  */
 
 export { EmptyState } from './EmptyState';
+export { SafeView, type SafeViewProps } from './SafeView';

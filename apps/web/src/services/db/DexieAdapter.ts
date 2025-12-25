@@ -151,6 +151,22 @@ export class DexieAdapter implements IDatabaseAdapter {
   }
 
   async deleteAccount(accountId: string): Promise<void> {
+    // Check if account has transactions
+    const transactionCount = await db.transactions.where('accountId').equals(accountId).count();
+
+    if (transactionCount > 0) {
+      throw new Error('Cannot delete account with existing transactions. Archive it instead.');
+    }
+
+    // Also check if account is used as destination in transfers
+    const transferCount = await db.transactions.where('toAccountId').equals(accountId).count();
+
+    if (transferCount > 0) {
+      throw new Error(
+        'Cannot delete account with existing transfer transactions. Archive it instead.'
+      );
+    }
+
     await db.accounts.delete(accountId);
   }
 
@@ -625,7 +641,41 @@ export class DexieAdapter implements IDatabaseAdapter {
   }
 
   async deleteGoal(goalId: string): Promise<void> {
-    await db.goals.delete(goalId);
+    const goal = await db.goals.get(goalId);
+    if (!goal) throw new Error('Goal not found');
+
+    // Find all transactions related to this goal
+    const goalTransactions = await db.transactions.where('goalId').equals(goalId).toArray();
+
+    await db.transaction('rw', [db.goals, db.accounts, db.transactions], async () => {
+      // Revert account balances for all goal transactions
+      for (const transaction of goalTransactions) {
+        const account = await db.accounts.get(transaction.accountId);
+        if (account) {
+          let newBalance = account.balance;
+
+          // Reverse the transaction effect
+          if (transaction.type === 'goal-contribution') {
+            // Contribution deducted from account, so add it back
+            newBalance += transaction.amount;
+          } else if (transaction.type === 'goal-withdrawal') {
+            // Withdrawal added to account, so deduct it back
+            newBalance -= transaction.amount;
+          }
+
+          await db.accounts.update(transaction.accountId, {
+            balance: newBalance,
+            updatedAt: new Date(),
+          });
+        }
+      }
+
+      // Delete all goal transactions
+      await db.transactions.where('goalId').equals(goalId).delete();
+
+      // Delete the goal
+      await db.goals.delete(goalId);
+    });
   }
 
   async updateGoalAmount(goalId: string, amount: number): Promise<void> {

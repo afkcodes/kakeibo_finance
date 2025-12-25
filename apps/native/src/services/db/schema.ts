@@ -33,6 +33,9 @@ export const CREATE_USERS_TABLE = `
 /**
  * Accounts table
  * Stores financial accounts (bank, cash, credit card, etc.)
+ *
+ * Note: balance is NOT stored - calculated from initialBalance + transactions
+ * The balance column is removed in favor of pure calculation
  */
 export const CREATE_ACCOUNTS_TABLE = `
   CREATE TABLE IF NOT EXISTS accounts (
@@ -40,7 +43,7 @@ export const CREATE_ACCOUNTS_TABLE = `
     userId TEXT NOT NULL,
     name TEXT NOT NULL,
     type TEXT NOT NULL,
-    balance REAL NOT NULL DEFAULT 0,
+    initialBalance REAL NOT NULL DEFAULT 0,
     currency TEXT NOT NULL,
     icon TEXT,
     color TEXT,

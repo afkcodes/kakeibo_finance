@@ -120,17 +120,27 @@ export interface IDatabaseAdapter {
   /**
    * Delete account
    *
+   * IMPORTANT: Should NOT delete accounts with transactions.
+   * Check if account has:
+   * 1. Any transactions where accountId matches
+   * 2. Any transfer transactions where toAccountId matches
+   *
+   * If transactions exist, throw error suggesting to archive instead.
+   * Users should use isActive=false (archive) for accounts with transaction history.
+   *
    * @param accountId - Account ID
+   * @throws Error if account has transactions
    */
   deleteAccount(accountId: string): Promise<void>;
 
   /**
    * Update account balance
    *
+   * @deprecated Use balance-adjustment transaction type instead for audit trail
    * @param accountId - Account ID
    * @param newBalance - New balance
    */
-  updateAccountBalance(accountId: string, newBalance: number): Promise<void>;
+  updateAccountBalance?(accountId: string, newBalance: number): Promise<void>;
 
   // ==================== Category Operations ====================
 
@@ -341,6 +351,14 @@ export interface IDatabaseAdapter {
 
   /**
    * Delete goal
+   *
+   * IMPORTANT: Must handle cleanup of related data:
+   * 1. Find all transactions with this goalId (type: 'goal-contribution' or 'goal-withdrawal')
+   * 2. Revert account balances for each transaction:
+   *    - goal-contribution: Add amount back to account (was deducted)
+   *    - goal-withdrawal: Subtract amount from account (was added)
+   * 3. Delete all related transactions
+   * 4. Delete the goal
    *
    * @param goalId - Goal ID
    */
