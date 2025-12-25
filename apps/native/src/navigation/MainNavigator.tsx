@@ -34,8 +34,8 @@ const Tabs = () => {
         selectedTintColor="#3b82f6"
         activeIndicatorColor="#3b82f630"
         unselectedTintColor="#ffffff"
-        preventFouc={true}
         labelVisibilityMode="labeled"
+        preventFouc={true}
       >
         <TabBarItem title="Hub" image={require('../assets/navigation/dashboard.png')}>
           <NavigationHandler stateNavigator={dashboardNavigator}>
@@ -100,7 +100,7 @@ const Tabs = () => {
           </NavigationHandler>
         </TabBarItem>
 
-        <TabBarItem title="Plan" image={require('../assets/navigation/plan.png')}>
+        <TabBarItem title="Subs" image={require('../assets/navigation/subs.png')}>
           <NavigationHandler stateNavigator={planNavigator}>
             <NavigationStack
               underlayColor="#030303"
@@ -116,12 +116,6 @@ const Tabs = () => {
             >
               <Scene stateKey="plan">
                 <PlanScreen />
-              </Scene>
-              <Scene stateKey="budgets">
-                <BudgetsScreen />
-              </Scene>
-              <Scene stateKey="goals">
-                <GoalsScreen />
               </Scene>
             </NavigationStack>
           </NavigationHandler>
@@ -143,6 +137,12 @@ const Tabs = () => {
             >
               <Scene stateKey="more">
                 <MoreScreen />
+              </Scene>
+              <Scene stateKey="budgets">
+                <BudgetsScreen />
+              </Scene>
+              <Scene stateKey="goals">
+                <GoalsScreen />
               </Scene>
             </NavigationStack>
           </NavigationHandler>

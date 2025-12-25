@@ -7,6 +7,13 @@
  * Platform: Platform-agnostic (core)
  */
 
+// Account balance calculations
+export {
+  calculateAccountBalance,
+  calculateAccountBalanceWithTransfers,
+  validateBalance,
+} from './accountBalance';
+
 // Budget progress calculations
 export {
   calculateActiveAlerts,

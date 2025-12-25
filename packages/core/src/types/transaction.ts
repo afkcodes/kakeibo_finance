@@ -11,13 +11,21 @@
 
 /**
  * Types of transactions supported
+ *
+ * - expense: Money spent
+ * - income: Money received
+ * - transfer: Money moved between accounts
+ * - goal-contribution: Money saved towards a goal (deducts from account)
+ * - goal-withdrawal: Money withdrawn from a goal (adds to account)
+ * - balance-adjustment: Manual correction for discrepancies (reconciliation)
  */
 export type TransactionType =
   | 'expense'
   | 'income'
   | 'transfer'
   | 'goal-contribution'
-  | 'goal-withdrawal';
+  | 'goal-withdrawal'
+  | 'balance-adjustment';
 
 /**
  * Geographic location data for a transaction

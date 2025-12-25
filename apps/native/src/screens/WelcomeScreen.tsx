@@ -1,6 +1,6 @@
 import { NavigationContext } from 'navigation-react';
 import { useContext } from 'react';
-import { StatusBar, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { AppIcon, Cloud, CloudOff, GoogleIcon, Lock } from '../components/common/Icon';
 import { Button } from '../components/ui/Button';
 
@@ -17,7 +17,7 @@ export const WelcomeScreen = () => {
 
   return (
     <View className="flex-1 bg-surface-950">
-      <StatusBar barStyle="light-content" hidden />
+      {/* <StatusBar barStyle="light-content" hidden /> */}
 
       <View
         style={{

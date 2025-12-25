@@ -35,6 +35,7 @@ import type {
   User,
 } from '@kakeibo/core';
 import {
+  calculateAccountBalance,
   cleanExportData,
   defaultExpenseCategories,
   defaultIncomeCategories,
@@ -142,10 +143,15 @@ export class SQLiteAdapter implements IDatabaseAdapter {
 
     const accounts = result.rows.map((row) => this.parseAccount(row));
 
-    // Apply filters
-    if (!filters) return accounts;
+    // Calculate balances for all accounts
+    const accountsWithBalance = await Promise.all(
+      accounts.map((account) => this.calculateAndSetAccountBalance(account))
+    );
 
-    return accounts.filter((account) => {
+    // Apply filters
+    if (!filters) return accountsWithBalance;
+
+    return accountsWithBalance.filter((account) => {
       if (filters.type && account.type !== filters.type) return false;
       // Map isArchived filter to isActive (archived = !active)
       if (filters.isArchived !== undefined && account.isActive === filters.isArchived) return false;
@@ -162,7 +168,9 @@ export class SQLiteAdapter implements IDatabaseAdapter {
     const result = await db.execute('SELECT * FROM accounts WHERE id = ?', [accountId]);
 
     if (result.rows.length === 0) return undefined;
-    return this.parseAccount(result.rows[0]);
+
+    const account = this.parseAccount(result.rows[0]);
+    return this.calculateAndSetAccountBalance(account);
   }
 
   async createAccount(userId: string, input: CreateAccountInput): Promise<Account> {
@@ -172,7 +180,8 @@ export class SQLiteAdapter implements IDatabaseAdapter {
       id: generateAccountId(),
       userId,
       ...input,
-      balance: input.balance ?? 0,
+      initialBalance: input.initialBalance ?? 0,
+      balance: input.initialBalance ?? 0, // Same as initialBalance at creation
       // Map isArchived from input (if provided) to isActive field in entity
       isActive: !(input.isArchived ?? false),
       createdAt: now,
@@ -180,14 +189,14 @@ export class SQLiteAdapter implements IDatabaseAdapter {
     };
 
     await db.execute(
-      `INSERT INTO accounts (id, userId, name, type, balance, currency, icon, color, isActive, createdAt, updatedAt)
+      `INSERT INTO accounts (id, userId, name, type, initialBalance, currency, icon, color, isActive, createdAt, updatedAt)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         account.id,
         account.userId,
         account.name,
         account.type,
-        account.balance,
+        account.initialBalance,
         account.currency,
         account.icon ?? null,
         account.color ?? null,
@@ -214,9 +223,9 @@ export class SQLiteAdapter implements IDatabaseAdapter {
       updateFields.push('type = ?');
       values.push(updates.type);
     }
-    if (updates.balance !== undefined) {
-      updateFields.push('balance = ?');
-      values.push(updates.balance);
+    if (updates.initialBalance !== undefined) {
+      updateFields.push('initialBalance = ?');
+      values.push(updates.initialBalance);
     }
     if (updates.currency !== undefined) {
       updateFields.push('currency = ?');
@@ -250,17 +259,35 @@ export class SQLiteAdapter implements IDatabaseAdapter {
 
   async deleteAccount(accountId: string): Promise<void> {
     const db = await getDatabase();
+
+    // Check if account has transactions
+    const transactionResult = await db.execute(
+      'SELECT COUNT(*) as count FROM transactions WHERE accountId = ?',
+      [accountId]
+    );
+    const transactionCount = (transactionResult.rows?.[0]?.count as number) || 0;
+
+    if (transactionCount > 0) {
+      throw new Error('Cannot delete account with existing transactions. Archive it instead.');
+    }
+
+    // Check if account is used as destination in transfers
+    const transferResult = await db.execute(
+      'SELECT COUNT(*) as count FROM transactions WHERE toAccountId = ?',
+      [accountId]
+    );
+    const transferCount = (transferResult.rows?.[0]?.count as number) || 0;
+
+    if (transferCount > 0) {
+      throw new Error(
+        'Cannot delete account with existing transfer transactions. Archive it instead.'
+      );
+    }
+
     await db.execute('DELETE FROM accounts WHERE id = ?', [accountId]);
   }
 
-  async updateAccountBalance(accountId: string, newBalance: number): Promise<void> {
-    const db = await getDatabase();
-    await db.execute('UPDATE accounts SET balance = ?, updatedAt = ? WHERE id = ?', [
-      newBalance,
-      new Date().toISOString(),
-      accountId,
-    ]);
-  }
+  // Balance is now calculated from initialBalance + transactions, no direct updates needed
 
   // ==================== Category Operations ====================
 
@@ -513,9 +540,6 @@ export class SQLiteAdapter implements IDatabaseAdapter {
           transaction.updatedAt.toISOString(),
         ]
       );
-
-      // Update account balances
-      await this.applyTransactionBalance(tx, transaction);
     });
 
     return transaction;
@@ -527,14 +551,10 @@ export class SQLiteAdapter implements IDatabaseAdapter {
   ): Promise<Transaction> {
     const db = await getDatabase();
 
-    // Get existing transaction to revert balance
     const existing = await this.getTransaction(transactionId);
     if (!existing) throw new Error(`Transaction ${transactionId} not found`);
 
     await db.transaction(async (tx) => {
-      // Revert old balance
-      await this.revertTransactionBalance(tx, existing);
-
       // Build update query
       const updateFields: string[] = [];
       const values: any[] = [];
@@ -590,12 +610,9 @@ export class SQLiteAdapter implements IDatabaseAdapter {
 
       await tx.execute(`UPDATE transactions SET ${updateFields.join(', ')} WHERE id = ?`, values);
 
-      // Get updated transaction
+      // Get updated transaction (for return value)
       const result = await tx.execute('SELECT * FROM transactions WHERE id = ?', [transactionId]);
       const updated = this.parseTransaction(result.rows[0]!);
-
-      // Apply new balance
-      await this.applyTransactionBalance(tx, updated);
     });
 
     const transaction = await this.getTransaction(transactionId);
@@ -606,121 +623,15 @@ export class SQLiteAdapter implements IDatabaseAdapter {
   async deleteTransaction(transactionId: string): Promise<void> {
     const db = await getDatabase();
 
-    // Get transaction to revert balance
     const transaction = await this.getTransaction(transactionId);
     if (!transaction) throw new Error(`Transaction ${transactionId} not found`);
 
     await db.transaction(async (tx) => {
-      // Revert balance
-      await this.revertTransactionBalance(tx, transaction);
-
-      // Delete transaction
       await tx.execute('DELETE FROM transactions WHERE id = ?', [transactionId]);
     });
   }
 
-  // Private helper methods for transaction balance management
-  private async applyTransactionBalance(tx: any, transaction: Transaction): Promise<void> {
-    // Get account
-    const accountResult = await tx.execute('SELECT * FROM accounts WHERE id = ?', [
-      transaction.accountId,
-    ]);
-    if (accountResult.rows.length === 0) throw new Error('Account not found');
-
-    const account = this.parseAccount(accountResult.rows[0]!);
-    let newBalance = account.balance;
-
-    switch (transaction.type) {
-      case 'expense':
-        newBalance -= transaction.amount;
-        break;
-      case 'income':
-        newBalance += transaction.amount;
-        break;
-      case 'transfer':
-        // Deduct from source account
-        newBalance -= transaction.amount;
-
-        // Add to destination account
-        if (transaction.toAccountId) {
-          const toAccountResult = await tx.execute('SELECT * FROM accounts WHERE id = ?', [
-            transaction.toAccountId,
-          ]);
-          if (toAccountResult.rows.length > 0) {
-            const toAccount = this.parseAccount(toAccountResult.rows[0]!);
-            await tx.execute('UPDATE accounts SET balance = ?, updatedAt = ? WHERE id = ?', [
-              toAccount.balance + transaction.amount,
-              new Date().toISOString(),
-              transaction.toAccountId,
-            ]);
-          }
-        }
-        break;
-      case 'goal-contribution':
-      case 'goal-withdrawal':
-        // These affect account balance (deduction/addition)
-        newBalance -= transaction.amount;
-        break;
-    }
-
-    // Update source account balance
-    await tx.execute('UPDATE accounts SET balance = ?, updatedAt = ? WHERE id = ?', [
-      newBalance,
-      new Date().toISOString(),
-      transaction.accountId,
-    ]);
-  }
-
-  private async revertTransactionBalance(tx: any, transaction: Transaction): Promise<void> {
-    // Get account
-    const accountResult = await tx.execute('SELECT * FROM accounts WHERE id = ?', [
-      transaction.accountId,
-    ]);
-    if (accountResult.rows.length === 0) throw new Error('Account not found');
-
-    const account = this.parseAccount(accountResult.rows[0]!);
-    let newBalance = account.balance;
-
-    // Revert is opposite of apply
-    switch (transaction.type) {
-      case 'expense':
-        newBalance += transaction.amount;
-        break;
-      case 'income':
-        newBalance -= transaction.amount;
-        break;
-      case 'transfer':
-        // Add back to source account
-        newBalance += transaction.amount;
-
-        // Remove from destination account
-        if (transaction.toAccountId) {
-          const toAccountResult = await tx.execute('SELECT * FROM accounts WHERE id = ?', [
-            transaction.toAccountId,
-          ]);
-          if (toAccountResult.rows.length > 0) {
-            const toAccount = this.parseAccount(toAccountResult.rows[0]!);
-            await tx.execute('UPDATE accounts SET balance = ?, updatedAt = ? WHERE id = ?', [
-              toAccount.balance - transaction.amount,
-              new Date().toISOString(),
-              transaction.toAccountId,
-            ]);
-          }
-        }
-        break;
-      case 'goal-contribution':
-      case 'goal-withdrawal':
-        newBalance += transaction.amount;
-        break;
-    }
-
-    // Update source account balance
-    await tx.execute('UPDATE accounts SET balance = ?, updatedAt = ? WHERE id = ?', [
-      newBalance,
-      new Date().toISOString(),
-      transaction.accountId,
-    ]);
-  }
+  // Balance is calculated from initialBalance + transactions, no update methods needed
 
   // ==================== Budget Operations ====================
 
@@ -995,7 +906,28 @@ export class SQLiteAdapter implements IDatabaseAdapter {
 
   async deleteGoal(goalId: string): Promise<void> {
     const db = await getDatabase();
-    await db.execute('DELETE FROM goals WHERE id = ?', [goalId]);
+
+    // Get the goal to verify it exists
+    const goalResult = await db.execute('SELECT * FROM goals WHERE id = ?', [goalId]);
+    if (!goalResult.rows || goalResult.rows.length === 0) {
+      throw new Error('Goal not found');
+    }
+
+    // Begin transaction for atomic operations
+    await db.execute('BEGIN TRANSACTION');
+
+    try {
+      // Delete all goal transactions (balance will automatically adjust when recalculated)
+      await db.execute('DELETE FROM transactions WHERE goalId = ?', [goalId]);
+
+      // Delete the goal
+      await db.execute('DELETE FROM goals WHERE id = ?', [goalId]);
+
+      await db.execute('COMMIT');
+    } catch (error) {
+      await db.execute('ROLLBACK');
+      throw error;
+    }
   }
 
   async contributeToGoal(
@@ -1501,7 +1433,8 @@ export class SQLiteAdapter implements IDatabaseAdapter {
       userId: row.userId,
       name: row.name,
       type: row.type,
-      balance: row.balance,
+      initialBalance: row.initialBalance || 0,
+      balance: 0, // Will be calculated separately
       currency: row.currency,
       icon: row.icon,
       color: row.color,
@@ -1509,6 +1442,36 @@ export class SQLiteAdapter implements IDatabaseAdapter {
       createdAt: new Date(row.createdAt),
       updatedAt: new Date(row.updatedAt),
     };
+  }
+
+  /**
+   * Calculate and set balance for an account from transactions
+   */
+  private async calculateAndSetAccountBalance(account: Account): Promise<Account> {
+    const db = await getDatabase();
+
+    // Get all transactions for this account (as source)
+    const txResult = await db.execute('SELECT * FROM transactions WHERE accountId = ?', [
+      account.id,
+    ]);
+    const transactions = txResult.rows.map((txRow) => this.parseTransaction(txRow));
+
+    // Get incoming transfers (where this account is destination)
+    const transferResult = await db.execute(
+      'SELECT * FROM transactions WHERE toAccountId = ? AND type = ?',
+      [account.id, 'transfer']
+    );
+    const incomingTransfers = transferResult.rows.map((txRow) => this.parseTransaction(txRow));
+
+    // Calculate balance
+    account.balance = calculateAccountBalance(account.initialBalance, transactions);
+
+    // Add incoming transfers
+    for (const transfer of incomingTransfers) {
+      account.balance += transfer.amount;
+    }
+
+    return account;
   }
 
   private parseCategory(row: any): Category {

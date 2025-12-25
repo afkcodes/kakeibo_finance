@@ -9,21 +9,29 @@
  */
 
 import { ScrollView, StatusBar, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeView } from '~/components/common';
 import {
-  AppIcon,
+  Bell,
   Calendar,
-  DangerAlert,
+  CalendarDays,
+  Category,
   Download,
+  FileText,
   Globe,
-  Leaf,
+  Heart,
+  Help,
+  Info,
+  PieChart,
   Share,
-  Shield,
-  Star,
-  Volume,
+  Tag,
+  Target,
+  Trash,
+  Upload,
+  Wallet,
 } from '../components/common/Icon';
 import { NetWorthCard } from '../components/settings/NetWorthCard';
 import { ProfileSection } from '../components/settings/ProfileSection';
+import { ProMembershipCard } from '../components/settings/ProMembershipCard';
 import {
   ActionButton,
   MenuButton,
@@ -54,14 +62,19 @@ export const MoreScreen = () => {
   const handleThemeChange = (newTheme: 'light' | 'dark') => console.log('Set theme:', newTheme);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#09090b' }} edges={['top']}>
+    <SafeView collapsable={false} applyTopInset applyBottomInset={false}>
       <StatusBar barStyle="light-content" />
 
-      <ScrollView className="flex-1" contentInsetAdjustmentBehavior="automatic">
+      <ScrollView className="flex-1" contentInsetAdjustmentBehavior="automatic" collapsable={false}>
         {/* Page Header */}
         <View className="px-5 pt-4 pb-6">
-          <Text className="text-xl font-semibold text-surface-50">Settings</Text>
-          <Text className="text-sm text-surface-400 mt-0.5">Customize your experience</Text>
+          <Text className="text-xl font-semibold text-surface-50">More</Text>
+          <Text className="text-sm text-surface-400 mt-0.5">Account, settings & tools</Text>
+        </View>
+
+        {/* Pro Membership Section */}
+        <View className="px-5 mb-6">
+          <ProMembershipCard onUpgrade={() => console.log('Upgrade to Pro')} />
         </View>
 
         {/* Net Worth Card */}
@@ -92,7 +105,7 @@ export const MoreScreen = () => {
             borderColor="#27272a"
           >
             <MenuButton
-              icon={<Shield width={22} height={22} color="#3b82f6" />}
+              icon={<Wallet width={22} height={22} color="#3b82f6" />}
               iconBg="#3b82f633"
               title="Accounts"
               description="View and manage accounts"
@@ -101,7 +114,7 @@ export const MoreScreen = () => {
             />
 
             <MenuButton
-              icon={<Leaf width={22} height={22} color="#10b981" />}
+              icon={<Category width={22} height={22} color="#10b981" />}
               iconBg="#10b98133"
               title="Categories"
               description="Manage spending categories"
@@ -110,11 +123,29 @@ export const MoreScreen = () => {
             />
 
             <MenuButton
-              icon={<Star width={22} height={22} color="#f59e0b" />}
+              icon={<Tag width={22} height={22} color="#f59e0b" />}
               iconBg="#f59e0b33"
               title="Tags"
               description="Organize with custom tags"
               onPress={() => console.log('Navigate to Tags')}
+              showBorder
+            />
+
+            <MenuButton
+              icon={<PieChart width={22} height={22} color="#8b5cf6" />}
+              iconBg="#8b5cf633"
+              title="Budgets"
+              description="Set and track spending limits"
+              onPress={() => console.log('Navigate to Budgets')}
+              showBorder
+            />
+
+            <MenuButton
+              icon={<Target width={22} height={22} color="#ec4899" />}
+              iconBg="#ec489933"
+              title="Goals"
+              description="Track savings and debt goals"
+              onPress={() => console.log('Navigate to Goals')}
             />
           </SquircleView>
         </View>
@@ -150,7 +181,7 @@ export const MoreScreen = () => {
 
             {/* Financial Month Start */}
             <SettingRow
-              icon={<Calendar width={20} height={20} color="#10b981" />}
+              icon={<CalendarDays width={20} height={20} color="#10b981" />}
               iconBg="#10b98133"
               label="Financial Month Start"
               value={`Day ${financialMonthStart}`}
@@ -181,7 +212,7 @@ export const MoreScreen = () => {
             borderColor="#27272a"
           >
             <ToggleRow
-              icon={<Volume width={20} height={20} color="#8b5cf6" />}
+              icon={<Bell width={20} height={20} color="#8b5cf6" />}
               iconBg="#8b5cf633"
               label="Enable Notifications"
               description="Get notified about your finances"
@@ -191,7 +222,7 @@ export const MoreScreen = () => {
             />
 
             <ToggleRow
-              icon={<Calendar width={20} height={20} color="#ec4899" />}
+              icon={<Bell width={20} height={20} color="#ec4899" />}
               iconBg="#ec489933"
               label="Budget Alerts"
               description="Get alerts when close to limits"
@@ -202,7 +233,7 @@ export const MoreScreen = () => {
             />
 
             <ToggleRow
-              icon={<Star width={20} height={20} color="#f59e0b" />}
+              icon={<Bell width={20} height={20} color="#f59e0b" />}
               iconBg="#f59e0b33"
               label="Goal Reminders"
               description="Get reminders to save toward goals"
@@ -234,7 +265,7 @@ export const MoreScreen = () => {
             />
 
             <ActionButton
-              icon={<Download width={20} height={20} color="#3b82f6" />}
+              icon={<Upload width={20} height={20} color="#3b82f6" />}
               iconBg="#3b82f633"
               title="Import Data"
               description="Restore data from backup"
@@ -243,7 +274,7 @@ export const MoreScreen = () => {
             />
 
             <ActionButton
-              icon={<DangerAlert width={20} height={20} color="#ef4444" />}
+              icon={<Trash width={20} height={20} color="#ef4444" />}
               iconBg="#ef444433"
               title="Delete All Data"
               description="Clear all data from this device"
@@ -265,16 +296,7 @@ export const MoreScreen = () => {
             borderColor="#27272a"
           >
             <MenuButton
-              icon={<AppIcon width={22} height={22} color="#8b5cf6" />}
-              iconBg="#8b5cf633"
-              title="About Kakeibo"
-              description="App info and version details"
-              onPress={() => console.log('About app')}
-              showBorder
-            />
-
-            <MenuButton
-              icon={<Globe width={22} height={22} color="#06b6d4" />}
+              icon={<Help width={22} height={22} color="#06b6d4" />}
               iconBg="#06b6d433"
               title="Help & Support"
               description="Get help or contact support"
@@ -283,7 +305,7 @@ export const MoreScreen = () => {
             />
 
             <MenuButton
-              icon={<Star width={22} height={22} color="#f59e0b" />}
+              icon={<Heart width={22} height={22} color="#f59e0b" />}
               iconBg="#f59e0b33"
               title="Rate App"
               description="Love Kakeibo? Leave us a review"
@@ -301,11 +323,20 @@ export const MoreScreen = () => {
             />
 
             <MenuButton
-              icon={<Shield width={22} height={22} color="#3b82f6" />}
+              icon={<FileText width={22} height={22} color="#3b82f6" />}
               iconBg="#3b82f633"
               title="Privacy & Terms"
               description="How we handle your data"
               onPress={() => console.log('Privacy & terms')}
+              showBorder
+            />
+
+            <MenuButton
+              icon={<Info width={22} height={22} color="#8b5cf6" />}
+              iconBg="#8b5cf633"
+              title="About Kakeibo"
+              description="App info and version details"
+              onPress={() => console.log('About app')}
             />
           </SquircleView>
         </View>
@@ -318,6 +349,6 @@ export const MoreScreen = () => {
           </Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </SafeView>
   );
 };

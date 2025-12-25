@@ -1,9 +1,9 @@
 # Kakeibo v2 Migration - Progress Report & Continuation Guide
 
-**Last Updated**: December 22, 2024  
-**Current Phase**: 🔄 Phase 4C - Feature Components (TransactionCard Complete!)  
-**Overall Progress**: 129/174 tasks (74.1% complete)
-**Native Progress**: 73/183 tasks (39.9% complete)
+**Last Updated**: December 25, 2024  
+**Current Phase**: 🔄 Phase 4F - Native Screens Implementation  
+**Overall Progress**: 145/191 tasks (75.9% complete)
+**Native Progress**: 137/183 tasks (74.9% complete)
 
 ---
 
@@ -11,16 +11,34 @@
 
 We are migrating **Kakeibo** (personal finance PWA) from a single-app structure to a **monorepo** supporting both web and native platforms. The project uses a shared core package (`@kakeibo/core`) with platform-specific implementations.
 
-### Latest Achievement
-Successfully implemented **Error Handling & User Feedback System**:
-- ✅ Global ErrorBoundary component with fallback UI
-- ✅ Skeleton loaders for all list views (TransactionList, BudgetList, GoalList, AccountList)
-- ✅ Loading states on all async operations
-- ✅ Confirmation modals for all delete operations (5 pages)
-- ✅ Network error handling with useNetworkStatus + OfflineBanner
-- ✅ Database error handling with retry logic (exponential backoff)
-- ✅ Form validation with React Hook Form + Zod
-- 🎯 Next: MEDIUM PRIORITY features (PWA, Accessibility, Advanced Features)
+### Latest Achievement (Dec 25, 2024)
+Successfully implemented **Pure Calculated Balance Architecture** and enhanced all **Native Platform Hooks**:
+
+**Pure Calculated Balance (Native Only)**:
+- ✅ Added `initialBalance` field to Account type and schema
+- ✅ Created `calculateAccountBalance()` utility in @kakeibo/core
+- ✅ Updated SQLiteAdapter:
+  - Removed `updateAccountBalance()`, `applyTransactionBalance()`, `revertTransactionBalance()`
+  - All transaction operations only modify transactions table
+  - Balance calculated on-the-fly: `balance = initialBalance + sum(transactions)`
+- ✅ Simplified `deleteGoal` - just deletes transactions (balance auto-corrects)
+- ✅ Benefits: Self-healing, crash-safe, full audit trail, no accumulated errors
+
+**All Native Hooks Enhanced**:
+- ✅ useTransactions + useTransactionActions: Zustand invalidation, toasts, return entities
+- ✅ useGoals: Zustand invalidation, toasts, return entities, progress calculations
+- ✅ useCategories: Zustand invalidation, toasts, return entities, stable deps
+- ✅ useBudgets: Zustand invalidation, toasts, return entities, stable deps
+- ✅ useAccounts: Zustand invalidation, toasts, return entities, stable deps
+- ✅ useAuth: Full migration support, MMKV storage, toast notifications
+
+**MMKV Storage Integration Fixed**:
+- ✅ Correct v4 API: `createMMKV()` not `new MMKV()`
+- ✅ Correct methods: `.remove()` not `.delete()`
+- ✅ PersistStorage<T> type for Zustand compatibility
+- ✅ Verified against official documentation
+
+🎯 Next: Complete remaining screens (Phase 4F)
 
 ### Previous Achievements
 - ✅ All shared types, schemas, utilities (35 tasks)
@@ -94,6 +112,26 @@ kakeibo-v2/
 
 2. **Platform Adapters**
    - `IDatabaseAdapter` interface in `@kakeibo/core`
+
+3. **Pure Calculated Balance (Native Only - Dec 25, 2024)**
+   ```typescript
+   // Formula
+   balance = initialBalance + sum(transactions)
+   
+   // Implementation in SQLiteAdapter
+   const calculateAndSetAccountBalance = (account: Account, transactions: Transaction[]) => {
+     return calculateAccountBalance(account.initialBalance, transactions);
+   };
+   
+   // Benefits
+   - Self-healing (recalculated on every query)
+   - Crash-safe (no partial updates)
+   - Full audit trail (all transactions preserved)
+   - No accumulated errors from bugs
+   - Simplified transaction operations (no balance revert logic)
+   ```
+   
+   **Status**: ✅ Native complete, ⏳ Web deferred
    - `DexieAdapter` (web) implements interface
    - `SQLiteAdapter` (native) will implement same interface
    - All UI code uses adapter, not Dexie directly

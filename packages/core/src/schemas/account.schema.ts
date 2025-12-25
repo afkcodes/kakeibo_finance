@@ -14,6 +14,9 @@ import { z } from 'zod';
  * Schema for creating a new account
  *
  * Validates all required fields for different account types.
+ *
+ * Note: initialBalance is the starting balance when you begin tracking this account.
+ * The current balance will be calculated from initialBalance + all transactions.
  */
 export const createAccountSchema = z.object({
   /** Account name */
@@ -22,8 +25,8 @@ export const createAccountSchema = z.object({
   /** Account type */
   type: z.enum(['bank', 'credit', 'cash', 'investment', 'wallet']),
 
-  /** Initial balance */
-  balance: z.number(),
+  /** Initial balance when account tracking starts */
+  initialBalance: z.number().default(0),
 
   /** Currency code (ISO 4217) */
   currency: z.string().min(3).max(3),
